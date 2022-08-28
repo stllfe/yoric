@@ -1,2 +1,1 @@
-# cayot
-Context Aware YO Transformer for Russian Language
+readme-ru.md
