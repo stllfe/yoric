@@ -1,0 +1,5 @@
+corus==0.9.0
+numpy==1.23.3
+pandas==1.5.0
+razdel==0.5.0
+tqdm==4.64.1
