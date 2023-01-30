@@ -1,4 +1,4 @@
-"""A script that extracts the sentences with `Ё` letter from the Russian Wikipedia dump."""
+"""A script that extracts the segments with `Ё` letter from the Russian Wikipedia dump."""
 
 import argparse
 import logging
@@ -16,12 +16,13 @@ from src import utils
 logging.getLogger().setLevel(logging.ERROR)
 
 
-def job(records: List[WikiRecord]) -> List[str]:
-    sentences = []
+def job(records: List[WikiRecord], id_sep: str = utils.SEPARATOR) -> List[str]:
+    segments = []
     for record in records:
         normalized = utils.normalize_wiki_text(record.text)
-        sentences.extend(utils.extract_unique_yo_segments(normalized, repl=' '))
-    return sentences
+        for segment in utils.extract_unique_yo_segments(normalized):
+            segments.append(f'{record.id}{id_sep}{segment}')
+    return segments
 
 
 def aggregate_job_results(pool: mp.Pool, jobs: List[List[WikiRecord]]) -> List[str]:
@@ -30,14 +31,16 @@ def aggregate_job_results(pool: mp.Pool, jobs: List[List[WikiRecord]]) -> List[s
 
 
 def main(args: argparse.Namespace):
-    assert args.num_sentences is None or args.num_sentences > 0
+    assert args.num_segments is None or args.num_segments > 0, (
+        '`num_segments` should be a positive integer!'
+    )
     wiki = load_wiki(args.wiki_path)
 
-    sentences = []
+    segments = []
     with mp.Pool(args.njobs) as pool, tqdm(
-        total=args.num_sentences,
+        total=args.num_segments,
         leave=True,
-        desc='Extracting `Ё` sentences from wiki records',
+        desc='Extracting `Ё` segments from wiki records',
         dynamic_ncols=True,
     ) as progress:
         jobs = []
@@ -47,17 +50,17 @@ def main(args: argparse.Namespace):
             else:
                 found = aggregate_job_results(pool, jobs)
                 progress.update(len(found))
-                sentences.extend(found)
+                segments.extend(found)
                 jobs.clear()
 
-            if args.num_sentences and len(sentences) >= args.num_sentences:
-                sentences = sentences[:args.num_sentences]
+            if args.num_segments and len(segments) >= args.num_segments:
+                segments = segments[:args.num_segments]
                 progress.update()
                 progress.close()
                 break
 
     with open(args.save_path, 'w', encoding='utf-8') as file:
-        for sentence in sentences:
+        for sentence in segments:
             file.write(sentence + '\n')
 
     print(f'File saved to: {args.save_path}')
@@ -75,8 +78,8 @@ if __name__ == '__main__':
     )
     parser.add_argument(
         '-f', '--save-path',
-        help='a filepath to save the sentences',
-        default='data/ruwiki-yo-sentences.txt'
+        help='a filepath to save the segments',
+        default='data/ruwiki-yo-segments.txt'
     )
     parser.add_argument(
         '-j', '--njobs',
@@ -93,10 +96,10 @@ if __name__ == '__main__':
         help='a number of documents for a single job',
     )
     parser.add_argument(
-        '-n', '--num-sentences',
+        '-n', '--num-segments',
         metavar='INT',
         type=int,
         default=None,
-        help='a hard limit of sentences to gather'
+        help='a hard limit of segments to gather'
     )
     main(parser.parse_args())

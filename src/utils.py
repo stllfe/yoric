@@ -9,21 +9,22 @@ import razdel
 
 EMPTY = ''
 SPACE = ' '
+SEPARATOR = '#'
 
 YO_LOWER_SYMBOL = 'ё'
 WIKI_HEADER = '=='
 
-ALLOWED_SYMBOLS = r"[А-яЁё0-9\ \.,?!\(\)\-\–:;\"«»]"
+ALLOWED_SYMBOLS = r'[А-яЁё0-9 .,?!()\-––:;"«»]'
 ALLOWED_SYMBOLS_REGEX = re.compile(ALLOWED_SYMBOLS)
 
-NOT_ALLOWED_SYMBOLS = f'[^{ALLOWED_SYMBOLS[1:-1]}]'
+NOT_ALLOWED_SYMBOLS = rf'[^{ALLOWED_SYMBOLS[1:-1]}]'
 NOT_ALLOWED_SYMBOLS_REGEX = re.compile(NOT_ALLOWED_SYMBOLS)
 
-QUOTE_REGEX = re.compile(r'((?:\"|«)([А-яЁё0-9\ \.,?!\(\)\-\–]+)(?:\"|»))')
-PARENTHESES_REGEX = re.compile(r'(\(([А-яЁё0-9\ \.,?!\-\–\"«»]+)\))')
+QUOTE_REGEX = re.compile(r'((?:"|«)([А-яЁё0-9 .,?!()\-––:;]+)(?:"|»))')
+PARENTHESES_REGEX = re.compile(r'(\(([А-яЁё0-9 .,?!\-––:;"«»]+)\))')
 
-MULTIPLE_SPACES_REGEX = re.compile('\s{2,}')
-WIKI_HEADER_REGEX = re.compile(f'=={ALLOWED_SYMBOLS}+==')
+MULTIPLE_SPACES_REGEX = re.compile(r'\s{2,}')
+WIKI_HEADER_REGEX = re.compile(rf'=={ALLOWED_SYMBOLS}+==')
 
 
 def split_sentences(text: str) -> List[str]:
@@ -41,18 +42,23 @@ def normalize_quote_marks(text: str) -> str:
     return QUOTE_REGEX.sub(r'"\2"', text)
 
 
-def extract_unique_yo_segments(text: str, repl: str = EMPTY) -> List[str]:
+def extract_unique_yo_segments(text: str, clean: bool = False, repl: str = EMPTY) -> List[str]:
     """Extracts all unique quotes, parentheses and whole sentences that contain `Ё`."""
 
-    sentences = []
+    segments = []
 
     for sentence in split_sentences(text):
-        quotes, sentence = extract_quotes(sentence, repl=repl, return_text=True)
-        parentheses, sentence = extract_parentheses(sentence, repl=repl, return_text=True)
+        if clean:
+            quotes, sentence = extract_quotes(sentence, repl=repl, return_text=True)
+            parentheses, sentence = extract_parentheses(sentence, repl=repl, return_text=True)
+        else:
+            quotes = extract_quotes(sentence)
+            parentheses = extract_parentheses(sentence)
+
         for item in quotes + parentheses + [sentence]:
             if YO_LOWER_SYMBOL in item.lower():
-                sentences.append(item)
-    return sentences
+                segments.append(item)
+    return segments
 
 
 def remove_multiple_spaces(text: str, repl: str = SPACE) -> str:
@@ -61,7 +67,7 @@ def remove_multiple_spaces(text: str, repl: str = SPACE) -> str:
     return MULTIPLE_SPACES_REGEX.sub(repl, text)
 
 
-def remove_non_alphanumpunct(text: str, repl: str = SPACE) -> str:
+def remove_not_allowed_symbols(text: str, repl: str = SPACE) -> str:
     """Removes all symbols that are not alphanumeric or punctuation."""
 
     return NOT_ALLOWED_SYMBOLS_REGEX.sub(repl, text)
@@ -112,7 +118,7 @@ def normalize_wiki_text(text: str) -> str:
 
     x = normalize_unicode(text)
     x = remove_wiki_header(x)
-    x = remove_non_alphanumpunct(x)
+    x = remove_not_allowed_symbols(x)
     x = normalize_quote_marks(x)
     x = remove_newlines(x)
     x = remove_multiple_spaces(x)
