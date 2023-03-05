@@ -12,7 +12,7 @@ from src import utils
     ),
 ])
 def test_extract_unique_yo_segments(text: str, expected: Set[str]):
-    assert set(utils.extract_unique_yo_segments(text)) == expected
+    assert set(utils.extract_unique_yo_segments(text, clean=True)) == expected
 
 
 @pytest.mark.parametrize('text, expected', [

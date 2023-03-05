@@ -27,6 +27,9 @@ class YoDict:
     def __len__(self) -> int:
         return len(self._dict)
 
+    def __contains__(self, key: str) -> bool:
+        return key in self._dict
+
     def clear(self) -> None:
         """Clears the dictionary."""
 
@@ -83,13 +86,12 @@ class YoDict:
         """Removes a given word from the dictionary."""
 
         key = self._replace_yo(word)
-
         del self._dict[key]
 
         if not self._is_capitalized(key):
             del self._dict[key.capitalize()]
 
-    def yoficate(self, word: str) -> str:
+    def restore_word(self, word: str) -> str:
         """Restores `Ё` in a word if the word exists in the dictionary."""
 
         return self._dict.get(word, word)

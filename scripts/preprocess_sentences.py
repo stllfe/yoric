@@ -4,20 +4,23 @@ import argparse
 import os
 import multiprocessing as mp
 
+import humanfriendly as hf
 from tqdm import tqdm
 from src import utils
 
 
-def print_filesize(filepath: str):
-    print(f'File size is {os.stat(filepath).st_size / (1024 ** 3):.2f} GB')
+def get_filesize(filepath: str) -> int:
+    """Returns filesize in bytes."""
+
+    return os.stat(filepath).st_size
 
 
 def main(args: argparse.Namespace):
-    with open(args.data_path) as file:
+    with open(args.data_path, encoding='utf-8') as file:
         data = file.readlines()
 
     print('Opened initial data.')
-    print_filesize(args.data_path)
+    print(f'Filesize is {hf.format_size(get_filesize(args.data_path))}')
 
     with mp.Pool(8) as pool, tqdm(
         pool.imap_unordered(utils.normalize_wiki_text, data),
@@ -26,12 +29,12 @@ def main(args: argparse.Namespace):
     ) as progress:
         new_data = list(progress)
 
-    with open(args.save_path, 'w') as file:
+    with open(args.save_path, 'w', encoding='utf-8') as file:
         for sentence in filter(bool, new_data):
             file.write(sentence + '\n')
 
     print('Saved results to a new file.')
-    print_filesize(args.save_path)
+    get_filesize(args.save_path)
 
 
 if __name__ == '__main__':

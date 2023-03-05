@@ -10,5 +10,5 @@ import pytest
     ('Все все понимают', 'Все всё понимают'),
     ('Все-все понимают', 'Все-все понимают'),
 ])
-def test_model_on_control_examples(example: str, expected: str):
+def test_behaviour_on_control_samples(example: str, expected: str):
     pass

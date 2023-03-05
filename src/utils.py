@@ -20,7 +20,7 @@ ALLOWED_SYMBOLS_REGEX = re.compile(ALLOWED_SYMBOLS)
 NOT_ALLOWED_SYMBOLS = rf'[^{ALLOWED_SYMBOLS[1:-1]}]'
 NOT_ALLOWED_SYMBOLS_REGEX = re.compile(NOT_ALLOWED_SYMBOLS)
 
-QUOTE_REGEX = re.compile(r'((?:"|«)([А-яЁё0-9 .,?!()\-––:;]+)(?:"|»))')
+QUOTE_REGEX = re.compile(r'((?:"|«|„)([А-яЁё0-9 .,?!()\-––:;]+)(?:"|»|“))')
 PARENTHESES_REGEX = re.compile(r'(\(([А-яЁё0-9 .,?!\-––:;"«»]+)\))')
 
 MULTIPLE_SPACES_REGEX = re.compile(r'\s{2,}')
