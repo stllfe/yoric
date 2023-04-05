@@ -16,35 +16,35 @@ stages:
       md5: a0c4cb74b6dd0a97fd8f1c78495028dc
       size: 864955
   extract-segments-from-wiki:
-    cmd: python  scripts/extract_segments_from_wiki.py -n 1000000 -j 4 -s 50
+    cmd: python scripts/extract_segments_from_wiki.py -n 1000000 -j 4 -s 50
     deps:
     - path: data/ruwiki-latest-pages-articles.xml.bz2
       md5: 01bed521f67bedf76fd561377bd3c3ec
       size: 4996155242
     outs:
     - path: data/ruwiki-yo-segments.txt
-      md5: e1a73e448df2fbb1ccc975d3c42b3d5e
+      md5: 11bf0e02feab1264a424b3b4b349dcfe
       size: 313125364
   prepare-segments-dataset:
     cmd: python scripts/prepare_segments_dataset.py --max-text-length 220
     deps:
     - path: data/ruwiki-yo-segments.txt
-      md5: e1a73e448df2fbb1ccc975d3c42b3d5e
+      md5: 11bf0e02feab1264a424b3b4b349dcfe
       size: 313125364
     outs:
     - path: data/ruwiki-yo-segments-preprocessed.csv
-      md5: a81ae12c6d63bfcc92e18c47f2bb29bd
+      md5: 8977e2f4302d57108d15846de18daf0f
       size: 354168207
   split-dataset:
     cmd: python scripts/split_dataset.py
     deps:
     - path: data/ruwiki-yo-segments-preprocessed.csv
-      md5: a81ae12c6d63bfcc92e18c47f2bb29bd
+      md5: 8977e2f4302d57108d15846de18daf0f
       size: 354168207
     outs:
     - path: data/test.csv
-      md5: 0c10a0680f8672ac22c21badb261762f
-      size: 88894993
+      md5: 4b0e7ca1bc2af46998685663839ffd5d
+      size: 88853486
     - path: data/train.csv
-      md5: 6ee72a9cb615f902167b30adeae31215
-      size: 266698368
+      md5: 1a2a6b776b8cbdb75f73e50267d1e935
+      size: 266739875
