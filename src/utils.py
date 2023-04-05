@@ -1,8 +1,10 @@
 import itertools
+import os
 import re
-
-from typing import Iterable, List, Tuple, Union
 import unicodedata
+
+from pathlib import Path
+from typing import Iterable, List, Tuple, Union
 
 import razdel
 
@@ -13,6 +15,14 @@ SEPARATOR = '#'
 
 YO_LOWER_SYMBOL = 'ё'
 WIKI_HEADER = '=='
+
+PUNCTUATION = '[{}()[\\]|<>=\\_"\'«»„“#$^%&*+-:;.,?!]'
+WORDS_REGEX = re.compile(
+    r'([А-ЯЁа-яё])[а-яё]+(?![а-яё]|\\.[ \u00A0\t]+([а-яё]|[А-ЯЁ]{2}|' +
+    PUNCTUATION + ')|\\.' +
+    PUNCTUATION + ')',
+    re.MULTILINE
+)
 
 ALLOWED_SYMBOLS = r'[А-яЁё0-9 .,?!()\-––:;"«»]'
 ALLOWED_SYMBOLS_REGEX = re.compile(ALLOWED_SYMBOLS)
@@ -25,6 +35,10 @@ PARENTHESES_REGEX = re.compile(r'(\(([А-яЁё0-9 .,?!\-––:;"«»]+)\))')
 
 MULTIPLE_SPACES_REGEX = re.compile(r'\s{2,}')
 WIKI_HEADER_REGEX = re.compile(rf'=={ALLOWED_SYMBOLS}+==')
+GLUED_SENTENCES_BORDER_REGEX = re.compile(r'([\w\d\s])([.;!?])([А-ЯЁ])')
+HANGING_PUNCT_REGEX = re.compile(r'\s+([.,:;!?])')
+
+Substring = Tuple[int, int]
 
 
 def split_sentences(text: str) -> List[str]:
@@ -52,8 +66,8 @@ def extract_unique_yo_segments(text: str, clean: bool = False, repl: str = EMPTY
             quotes, sentence = extract_quotes(sentence, repl=repl, return_text=True)
             parentheses, sentence = extract_parentheses(sentence, repl=repl, return_text=True)
         else:
-            quotes = extract_quotes(sentence)
-            parentheses = extract_parentheses(sentence)
+            quotes = extract_quotes(sentence, return_text=False)
+            parentheses = extract_parentheses(sentence, return_text=False)
 
         for item in quotes + parentheses + [sentence]:
             if YO_LOWER_SYMBOL in item.lower():
@@ -113,15 +127,29 @@ def remove_wiki_header(text: str, repl: str = SPACE) -> str:
     return WIKI_HEADER_REGEX.sub(repl, text)
 
 
+def restore_glued_sentences(text: str, sep: str = SPACE) -> str:
+    """Naively restores the space between two (likely) sentences."""
+
+    return GLUED_SENTENCES_BORDER_REGEX.sub(rf'\1\2{sep}\3', text)
+
+
+def fix_hanging_punctuation(text: str) -> str:
+    """Removes excessive space symbols before the punctuation ones."""
+
+    return HANGING_PUNCT_REGEX.sub(r'\1', text)
+
+
 def normalize_wiki_text(text: str) -> str:
     """Produces as clean wiki text as possible."""
 
     x = normalize_unicode(text)
     x = remove_wiki_header(x)
     x = remove_not_allowed_symbols(x)
-    x = normalize_quote_marks(x)
-    x = remove_newlines(x)
     x = remove_multiple_spaces(x)
+    x = remove_newlines(x)
+    x = restore_glued_sentences(x)
+    x = fix_hanging_punctuation(x)
+
     return x
 
 
@@ -131,3 +159,27 @@ def batch(iterable: Iterable, size: int) -> Iterable:
     it = iter(iterable)
     while item := list(itertools.islice(it, size)):
         yield item
+
+
+def get_filesize(filepath: Union[str, Path]) -> int:
+    """Returns filesize in bytes."""
+
+    return os.stat(filepath).st_size
+
+
+def hasyo(text: str) -> bool:
+    """Returns whether or not the given text contains `Ё` letter."""
+
+    return YO_LOWER_SYMBOL in text.lower()
+
+
+def get_yo_substrings(text: str) -> List[Substring]:
+    """Returns all `Ё` substring tuples (start, end indices)."""
+
+    return [match.span() for match in WORDS_REGEX.finditer(text) if hasyo(match.group())]
+
+
+def yeficate(text: str) -> str:
+    """Replaces `Ё` to `Е` letters."""
+
+    return text.replace('Ё', 'Е').replace('ё', 'е')

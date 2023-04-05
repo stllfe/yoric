@@ -10,16 +10,8 @@ from dataclasses import dataclass
 from functools import cmp_to_key
 from typing import List, Union
 
+from src import utils
 from src.yodict import YoDict
-
-
-PUNCTUATION = '[{}()[\\]|<>=\\_"\'«»„“#$^%&*+-:;.,?!]'
-WORDS_REGEX = re.compile(
-    r'([А-ЯЁа-яё])[а-яё]+(?![а-яё]|\\.[ \u00A0\t]+([а-яё]|[А-ЯЁ]{2}|' +
-    PUNCTUATION + ')|\\.' +
-    PUNCTUATION + ')',
-    re.MULTILINE
-)
 
 
 @dataclass(frozen=True)
@@ -75,7 +67,7 @@ class Eyo:
                 return yoword
             return eword
 
-        text = re.sub(WORDS_REGEX, replace, text)
+        text = re.sub(utils.WORDS_REGEX, replace, text)
         if group:
             replacements = sorted(replacements, key=cmp_to_key(self._compare_replacements))
             replacements = self._remove_duplicates(replacements)
@@ -91,7 +83,7 @@ class Eyo:
         def replace(eword: re.Match[str]) -> str:
             return self.dictionary.restore_word(eword.group())
 
-        return re.sub(WORDS_REGEX, replace, text)
+        return re.sub(utils.WORDS_REGEX, replace, text)
 
     @staticmethod
     def _has_eyo(text: str) -> bool:

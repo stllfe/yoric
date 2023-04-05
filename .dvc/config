@@ -1,0 +1,6 @@
+[core]
+    remote = s3
+['remote "s3"']
+    url = s3://yogurt
+    listobjects = true
+    endpointurl = https://gateway.storjshare.io

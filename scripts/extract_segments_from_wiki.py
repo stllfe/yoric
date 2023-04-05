@@ -60,8 +60,8 @@ def main(args: argparse.Namespace):
                 break
 
     with open(args.save_path, 'w', encoding='utf-8') as file:
-        for sentence in segments:
-            file.write(sentence + '\n')
+        for segment in segments:
+            file.write(segment + '\n')
 
     print(f'File saved to: {args.save_path}')
 
@@ -72,12 +72,12 @@ if __name__ == '__main__':
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
     parser.add_argument(
-        '-w', '--wiki-path',
+        '-i', '--wiki-path',
         help='a path to wiki dump',
         default='data/ruwiki-latest-pages-articles.xml.bz2'
     )
     parser.add_argument(
-        '-f', '--save-path',
+        '-o', '--save-path',
         help='a filepath to save the segments',
         default='data/ruwiki-yo-segments.txt'
     )
