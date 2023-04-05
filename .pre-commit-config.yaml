@@ -1,6 +1,6 @@
 repos:
 - repo: https://github.com/iterative/dvc
-  rev: main
+  rev: 2.52.0
   hooks:
   - id: dvc-pre-commit
     additional_dependencies:
