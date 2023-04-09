@@ -2,9 +2,17 @@
 ## Создание окружения для разработки
 1. Создать виртуальное окружение Python:
     ```shell
-    python -m venv venv
+    python -m venv venv && \
+    source /venv/bin/activate && \
+    pip install --upgrade setuptools wheel pip
     ```
     _В проекте предполагается использование версии Python >=3.8!_
+1. Инициализировать pre-commit:
+    ```shell
+    pip install pre-commit && \
+    pre-commit install
+    ```
+    pre-commit хуки настроены на действия `commit`, `push` и `checkout`. В нашем случае хуки проверяют [согласованность версий файлов](https://dvc.org/doc/command-reference/install#install) в удаленном хранилище, кеше DVC и, собственно, в самом репозитории.
 1. Выгрузить данные из DVC.
 
     _Команды выполняются из корня проекта!_
@@ -22,6 +30,7 @@
     ```shell
     pytest [tests/path/to/concrete/test.py]
     ```
+
 
 # Данные для обучения и тестирования
 
