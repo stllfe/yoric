@@ -11,7 +11,7 @@ stages:
       - data/not-safe.txt
       - data/safe.txt
   extract-segments-from-wiki:
-    cmd: python scripts/extract_segments_from_wiki.py -n ${data.num-segments} -j ${data.njobs} -s ${data.jobsize}
+    cmd: python scripts/extract_segments_from_wiki.py -n ${data.num-segments}
     deps:
       - data/ruwiki-latest-pages-articles.xml.bz2
     outs:

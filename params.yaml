@@ -3,7 +3,5 @@
 # data processing
 data:
   num-segments: 1000000  # initial number of samples from wiki
-  njobs: 4
-  jobsize: 50
   max-text-length: 220  # the maximum text length in characters
   test-size: 0.25  # data fraction to use for test

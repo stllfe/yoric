@@ -16,7 +16,7 @@ stages:
       md5: a0c4cb74b6dd0a97fd8f1c78495028dc
       size: 864955
   extract-segments-from-wiki:
-    cmd: python scripts/extract_segments_from_wiki.py -n 1000000 -j 4 -s 50
+    cmd: python scripts/extract_segments_from_wiki.py -n 1000000
     deps:
     - path: data/ruwiki-latest-pages-articles.xml.bz2
       md5: 01bed521f67bedf76fd561377bd3c3ec

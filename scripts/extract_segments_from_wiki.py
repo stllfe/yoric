@@ -92,7 +92,7 @@ if __name__ == '__main__':
         '-s', '--jobsize',
         metavar='INT',
         type=int,
-        default=10,
+        default=50,
         help='a number of documents for a single job',
     )
     parser.add_argument(
