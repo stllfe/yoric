@@ -4,7 +4,8 @@
     ```shell
     python -m venv venv && \
     source /venv/bin/activate && \
-    pip install --upgrade setuptools wheel pip
+    pip install --upgrade setuptools wheel pip && \
+    pip install -r requirements.txt
     ```
     _В проекте предполагается использование версии Python >=3.8!_
 1. Инициализировать pre-commit:
@@ -15,7 +16,7 @@
     pre-commit хуки настроены на действия `commit`, `push` и `checkout`. В нашем случае хуки проверяют [согласованность версий файлов](https://dvc.org/doc/command-reference/install#install) в удаленном хранилище, кеше DVC и, собственно, в самом репозитории.
 1. Выгрузить данные из DVC.
 
-    _Команды выполняются из корня проекта!_
+    _Команды выполняются из корня проекта! Если по какой-то причине DVC не подхватывает корень, достаточно установить переменную окружения `PYTHONPATH`._
 
     Посмотреть каких данных не хватает:
     ```shell
