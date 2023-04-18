@@ -1,15 +1,14 @@
 import pandas as pd
 import argparse
-from src.baseline_model import Baseline
+from src.dict_model import DictModel
 from src.evaluate import evaluate_model 
 
 
-def main(args: argparse.Namespace):
+def main(args: argparse.Namespace) -> None:
     df = pd.read_csv(args.data)
     df["yo_words"] = df["yo_words"].apply(eval)
 
-    model = Baseline()
-    evaluate_model(model=model, data=df, verbose=True)
+    evaluate_model(model=DictModel(safe_dict=False), data=df, verbose=True)
 
 
 if __name__ == "__main__":
@@ -20,7 +19,6 @@ if __name__ == "__main__":
 
     parser.add_argument(
         "--data", 
-        type=str,
         help="path to CSV file",
         default="data/test.csv"
     )
