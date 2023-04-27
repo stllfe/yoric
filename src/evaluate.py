@@ -2,9 +2,10 @@ import pandas as pd
 import numpy as np
 import re
 import time
+import json
 from src.model import YoModel
 from tqdm import tqdm
-from typing import List, Tuple
+from typing import List, Tuple, Union
 from src.utils import WORDS_REGEX
 from dataclasses import dataclass, asdict
 from sklearn.metrics import accuracy_score, precision_score, recall_score, \
@@ -26,6 +27,7 @@ class EvaluateResult:
     def __str__(self):
         return "\n".join([f"{m}: {v}" for m, v in asdict(self).items()])
 
+
 def get_token_counts(text: str) -> int:
     """Calculate count of token in text"""
     return len(list(re.finditer(WORDS_REGEX, text)))
@@ -40,7 +42,8 @@ def get_substrings(text: str) -> List[Tuple[int]]:
     return res
 
 
-def substrings2onehot(text: str, positions: List[Tuple[int, int]]) -> np.ndarray[bool]:
+def substrings2onehot(text: str,
+                      positions: List[Tuple[int, int]]) -> np.ndarray[bool]:
     """Transforms substring positions to one hot vector"""
     words_pos = get_substrings(text)
     one_hot_index = np.zeros(len(words_pos), dtype=bool)
@@ -51,7 +54,10 @@ def substrings2onehot(text: str, positions: List[Tuple[int, int]]) -> np.ndarray
     return one_hot_index
 
 
-def evaluate_model(model: YoModel, data: pd.DataFrame, verbose: bool = False) -> EvaluateResult:
+def evaluate_model(model: YoModel,
+                   data: pd.DataFrame,
+                   verbose: bool = False,
+                   save_path: Union[str, None] = None) -> EvaluateResult:
     X = data['ye_text'].to_list()
     y_true = data["yo_words"].to_list()
 
@@ -60,9 +66,9 @@ def evaluate_model(model: YoModel, data: pd.DataFrame, verbose: bool = False) ->
     y_pred = model.predict(X, verbose=verbose)
     wall_time = time.time() - wall_time
     cpu_time = time.process_time() - cpu_time
-    
+
     y_true_onehot = []
-    y_pred_onehot =[]
+    y_pred_onehot = []
 
     if verbose:
         X = tqdm(X, desc="Index to onehot")
@@ -83,8 +89,12 @@ def evaluate_model(model: YoModel, data: pd.DataFrame, verbose: bool = False) ->
         cpu_time=cpu_time,
         token_to_sec=count_tokens/wall_time
     )
-    
+
     if verbose:
         print("Metrics\n" + str(res))
+
+    if save_path:
+        with open(save_path, "w") as f:
+            f.write(json.dumps(asdict(res)))
 
     return res
