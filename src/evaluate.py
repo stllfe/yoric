@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import re
+import time
 from src.model import YoModel
 from tqdm import tqdm
 from typing import List, Tuple
@@ -18,9 +19,16 @@ class EvaluateResult:
     recall: float
     f1_score: float
     auroc: float
+    wall_time: float
+    cpu_time: float
+    token_to_sec: float
 
     def __str__(self):
         return "\n".join([f"{m}: {v}" for m, v in asdict(self).items()])
+
+def get_token_counts(text: str) -> int:
+    """Calculate count of token in text"""
+    return len(list(re.finditer(WORDS_REGEX, text)))
 
 
 def get_substrings(text: str) -> List[Tuple[int]]:
@@ -46,7 +54,12 @@ def substrings2onehot(text: str, positions: List[Tuple[int, int]]) -> np.ndarray
 def evaluate_model(model: YoModel, data: pd.DataFrame, verbose: bool = False) -> EvaluateResult:
     X = data['ye_text'].to_list()
     y_true = data["yo_words"].to_list()
+
+    wall_time = time.time()
+    cpu_time = time.process_time()
     y_pred = model.predict(X, verbose=verbose)
+    wall_time = time.time() - wall_time
+    cpu_time = time.process_time() - cpu_time
     
     y_true_onehot = []
     y_pred_onehot =[]
@@ -58,12 +71,17 @@ def evaluate_model(model: YoModel, data: pd.DataFrame, verbose: bool = False) ->
         y_true_onehot.extend(substrings2onehot(text, y_true[i]))
         y_pred_onehot.extend(substrings2onehot(text, y_pred[i]))
 
+    count_tokens = data['ye_text'].apply(get_token_counts).sum()
+
     res = EvaluateResult(
         accuracy=accuracy_score(y_true_onehot, y_pred_onehot),
         precision=precision_score(y_true_onehot, y_pred_onehot),
         recall=recall_score(y_true_onehot, y_pred_onehot),
         f1_score=f1_score(y_true_onehot, y_pred_onehot),
-        auroc=roc_auc_score(y_true_onehot, y_pred_onehot)
+        auroc=roc_auc_score(y_true_onehot, y_pred_onehot),
+        wall_time=wall_time,
+        cpu_time=cpu_time,
+        token_to_sec=count_tokens/wall_time
     )
     
     if verbose:
