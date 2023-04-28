@@ -1,4 +1,4 @@
-from typing import Set
+from typing import List, Set, Tuple
 
 import pytest
 
@@ -49,3 +49,11 @@ def test_fix_hanging_punctuation(text: str, expected: str) -> None:
 ])
 def test_restore_glued_sentences(text: str, sep: str, expected: str) -> None:
     assert utils.restore_glued_sentences(text, sep) == expected
+
+
+@pytest.mark.parametrize('text, expected', [
+    ('Всё будет хорошо', [(0, 3)]),
+    ('Ёжик был не против', []),
+])
+def test_not_safe_yo_substings(text: str, expected: List[Tuple[int, int]]) -> None:
+    assert utils.get_not_safe_yo_substrings(text) == expected
