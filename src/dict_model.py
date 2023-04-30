@@ -6,7 +6,7 @@ from typing import List
 
 
 class DictModel(YoModel):
-    """Model that preidcts substrings of yo words from a dict"""
+    """Model that predicts substrings of yo words from a dict"""
 
     def __init__(self, safe_dict: bool = True) -> None:
         super().__init__()

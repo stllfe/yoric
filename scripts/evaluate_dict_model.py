@@ -27,15 +27,15 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "--safe_dict",
+        "--safe-dict",
         action=argparse.BooleanOptionalAction,
-        help="Using safe dir or unsafe",
+        help="using safe dict or unsafe",
         default=False
     )
 
     parser.add_argument(
-        "--save_path",
-        help="path to save result in JSON fromat",
+        "--save-path",
+        help="path to save result in JSON format",
         required=False
     )
 

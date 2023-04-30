@@ -5,11 +5,10 @@ import time
 import json
 from src.model import YoModel
 from tqdm import tqdm
+from sklearn import metrics
 from typing import List, Tuple, Union
 from src.utils import WORDS_REGEX
 from dataclasses import dataclass, asdict
-from sklearn.metrics import accuracy_score, precision_score, recall_score, \
-    f1_score, roc_auc_score
 
 
 @dataclass
@@ -22,7 +21,7 @@ class EvaluateResult:
     auroc: float
     wall_time: float
     cpu_time: float
-    token_to_sec: float
+    token_per_sec: float
 
     def __str__(self):
         return "\n".join([f"{m}: {v}" for m, v in asdict(self).items()])
@@ -80,14 +79,14 @@ def evaluate_model(model: YoModel,
     count_tokens = data['ye_text'].apply(get_token_counts).sum()
 
     res = EvaluateResult(
-        accuracy=accuracy_score(y_true_onehot, y_pred_onehot),
-        precision=precision_score(y_true_onehot, y_pred_onehot),
-        recall=recall_score(y_true_onehot, y_pred_onehot),
-        f1_score=f1_score(y_true_onehot, y_pred_onehot),
-        auroc=roc_auc_score(y_true_onehot, y_pred_onehot),
+        accuracy=metrics.accuracy_score(y_true_onehot, y_pred_onehot),
+        precision=metrics.precision_score(y_true_onehot, y_pred_onehot),
+        recall=metrics.recall_score(y_true_onehot, y_pred_onehot),
+        f1_score=metrics.f1_score(y_true_onehot, y_pred_onehot),
+        auroc=metrics.roc_auc_score(y_true_onehot, y_pred_onehot),
         wall_time=wall_time,
         cpu_time=cpu_time,
-        token_to_sec=count_tokens/wall_time
+        token_per_sec=count_tokens / wall_time
     )
 
     if verbose:
@@ -95,6 +94,6 @@ def evaluate_model(model: YoModel,
 
     if save_path:
         with open(save_path, "w") as f:
-            f.write(json.dumps(asdict(res)))
+            f.write(json.dumps(asdict(res), indent=2))
 
     return res
