@@ -67,7 +67,7 @@ def enrich_columns(data: pd.DataFrame) -> pd.DataFrame:
     new['text_length'] = data.text.apply(len)
     new['text_loglen'] = new.text_length.apply(np.log)
 
-    new['yo_words'] = data.text.apply(utils.get_yo_substrings)
+    new['yo_words'] = data.text.apply(utils.get_not_safe_yo_substrings)
 
     return new
 
