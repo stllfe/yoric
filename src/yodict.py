@@ -28,7 +28,8 @@ class YoDict:
         return len(self._dict)
 
     def __contains__(self, key: str) -> bool:
-        return key in self._dict
+        ekey = self._replace_yo(key)
+        return self._dict.get(key, self._dict.get(ekey)) is not None
 
     def clear(self) -> None:
         """Clears the dictionary."""

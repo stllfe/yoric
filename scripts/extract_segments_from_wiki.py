@@ -3,6 +3,7 @@
 import argparse
 import logging
 import multiprocessing as mp
+from multiprocessing.pool import Pool
 
 from typing import List
 
@@ -21,11 +22,12 @@ def job(records: List[WikiRecord], id_sep: str = utils.SEPARATOR) -> List[str]:
     for record in records:
         normalized = utils.normalize_wiki_text(record.text)
         for segment in utils.extract_unique_yo_segments(normalized):
-            segments.append(f'{record.id}{id_sep}{segment}')
+            if utils.get_not_safe_yo_substrings(segment):
+                segments.append(f'{record.id}{id_sep}{segment}')
     return segments
 
 
-def aggregate_job_results(pool: mp.Pool, jobs: List[List[WikiRecord]]) -> List[str]:
+def aggregate_job_results(pool: Pool, jobs: List[List[WikiRecord]]) -> List[str]:
     results = pool.imap_unordered(job, jobs)
     return sum(results, [])
 

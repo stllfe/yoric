@@ -4,9 +4,12 @@ import re
 import unicodedata
 
 from pathlib import Path
-from typing import Iterable, List, Tuple, Union
+from typing import Iterable, List, Optional, Tuple, Union
 
 import razdel
+
+from src.yodict import YoDict
+from src.yodict import get_not_safe
 
 
 EMPTY = ''
@@ -173,10 +176,29 @@ def hasyo(text: str) -> bool:
     return YO_LOWER_SYMBOL in text.lower()
 
 
-def get_yo_substrings(text: str) -> List[Substring]:
-    """Returns all `Ё` substring tuples (start, end indices)."""
+def get_yo_substrings(text: str, yodict: Optional[YoDict] = None) -> List[Substring]:
+    """Returns all `Ё` substring tuples (start, end indices).
 
-    return [match.span() for match in WORDS_REGEX.finditer(text) if hasyo(match.group())]
+    Args:
+        text: A text to extract the substrings from.
+        yodict: A dictionary to use for selecting substrings (`None` = all substrings)
+    """
+
+    substrings = []
+    for match in WORDS_REGEX.finditer(text):
+        if not hasyo(match.group()):
+            continue
+        if yodict and match.group() not in yodict:
+            continue
+        substrings.append(match.span())
+
+    return substrings
+
+
+def get_not_safe_yo_substrings(text: str) -> List[Substring]:
+    """Just a simple alias around `get_yo_substrings` and a not-safe dictionary."""
+
+    return get_yo_substrings(text, yodict=get_not_safe())
 
 
 def yeficate(text: str) -> str:
