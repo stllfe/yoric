@@ -32,21 +32,11 @@ def get_token_counts(text: str) -> int:
     return len(list(re.finditer(WORDS_REGEX, text)))
 
 
-def get_substrings(text: str) -> List[Tuple[int]]:
-    """Extracts ye (yo) word indexes from text"""
-    res = []
-    for re_match in re.finditer(WORDS_REGEX, text):
-        if re.search(r'[ЕЁеё]', re_match.group()) is not None:
-            res.append(re_match.span())
-    return res
-
-
-def substrings2onehot(text: str,
-                      positions: List[Tuple[int, int]]) -> np.ndarray[bool]:
+def substrings2onehot(words_pos: List[List[Tuple[int, int]]],
+                      yo_words: List[Tuple[int, int]]) -> np.ndarray:
     """Transforms substring positions to one hot vector"""
-    words_pos = get_substrings(text)
     one_hot_index = np.zeros(len(words_pos), dtype=bool)
-    for i, pos in enumerate(positions):
+    for i, pos in enumerate(yo_words):
         if pos in words_pos:
             one_hot_index.put(i, True)
 
@@ -58,7 +48,12 @@ def evaluate_model(model: YoModel,
                    verbose: bool = False,
                    save_path: Union[str, None] = None) -> EvaluateResult:
     X = data['ye_text'].to_list()
-    y_true = data["yo_words"].to_list()
+    ye_words = data["ye_words"].to_list()
+    yo_words = data["yo_words"].to_list()
+    words_positions = []
+    for i in range(data.shape[0]):
+        words_pos = sorted((ye_words[i] + yo_words[i]), key=lambda x: x[0])
+        words_positions.append(words_pos)
 
     wall_time = time.time()
     cpu_time = time.process_time()
@@ -66,24 +61,24 @@ def evaluate_model(model: YoModel,
     wall_time = time.time() - wall_time
     cpu_time = time.process_time() - cpu_time
 
-    y_true_onehot = []
+    yo_words_onehot = []
     y_pred_onehot = []
 
     if verbose:
         X = tqdm(X, desc="Index to onehot")
 
-    for i, text in enumerate(X):
-        y_true_onehot.extend(substrings2onehot(text, y_true[i]))
-        y_pred_onehot.extend(substrings2onehot(text, y_pred[i]))
+    for i, words_pos in enumerate(words_positions):
+        yo_words_onehot.extend(substrings2onehot(words_pos, yo_words[i]))
+        y_pred_onehot.extend(substrings2onehot(words_pos, y_pred[i]))
 
     count_tokens = data['ye_text'].apply(get_token_counts).sum()
 
     res = EvaluateResult(
-        accuracy=metrics.accuracy_score(y_true_onehot, y_pred_onehot),
-        precision=metrics.precision_score(y_true_onehot, y_pred_onehot),
-        recall=metrics.recall_score(y_true_onehot, y_pred_onehot),
-        f1_score=metrics.f1_score(y_true_onehot, y_pred_onehot),
-        auroc=metrics.roc_auc_score(y_true_onehot, y_pred_onehot),
+        accuracy=metrics.accuracy_score(yo_words_onehot, y_pred_onehot),
+        precision=metrics.precision_score(yo_words_onehot, y_pred_onehot),
+        recall=metrics.recall_score(yo_words_onehot, y_pred_onehot),
+        f1_score=metrics.f1_score(yo_words_onehot, y_pred_onehot),
+        auroc=metrics.roc_auc_score(yo_words_onehot, y_pred_onehot),
         wall_time=wall_time,
         cpu_time=cpu_time,
         token_per_sec=count_tokens / wall_time
