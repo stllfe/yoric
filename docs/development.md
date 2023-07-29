@@ -7,7 +7,7 @@
     pip install --upgrade setuptools wheel pip && \
     pip install -r requirements.txt
     ```
-    _В проекте предполагается использование версии Python >=3.8!_
+    _В проекте предполагается использование версии Python >=3.9!_
 1. Инициализировать pre-commit:
     ```shell
     pip install pre-commit && \

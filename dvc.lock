@@ -16,35 +16,66 @@ stages:
       md5: a0c4cb74b6dd0a97fd8f1c78495028dc
       size: 864955
   extract-segments-from-wiki:
-    cmd: python -m scripts.extract_segments_from_wiki -n 1000000
+    cmd: python -m scripts.extract_segments_from_wiki --max-text-length 220 -i data/ruwiki-latest-pages-articles.xml.bz2
+      -o data/ruwiki-yo-segments.txt
     deps:
     - path: data/ruwiki-latest-pages-articles.xml.bz2
       md5: 01bed521f67bedf76fd561377bd3c3ec
       size: 4996155242
     outs:
     - path: data/ruwiki-yo-segments.txt
-      md5: 87032f5eacca355e6300ff6414ebaef9
-      size: 325853908
-  prepare-segments-dataset:
-    cmd: python -m scripts.prepare_segments_dataset --max-text-length 220
+      md5: a10a714dced2c8df675cdcfabf49f7a4
+      size: 241764687
+  generate-dataset:
+    cmd: python -m scripts.generate_dataset --strategy downsample --min-word-count
+      2 --test-size 0.25 --compress --vocab-filename vocab.txt --markups-filename
+      markups.jsonl.bz2 -i data/ruwiki-yo-segments.txt -O data
     deps:
+    - path: data/ruwiki-latest-pages-articles.xml.bz2
+      hash: md5
+      md5: 01bed521f67bedf76fd561377bd3c3ec
+      size: 4996155242
     - path: data/ruwiki-yo-segments.txt
-      md5: 87032f5eacca355e6300ff6414ebaef9
-      size: 325853908
+      hash: md5
+      md5: a10a714dced2c8df675cdcfabf49f7a4
+      size: 241764687
     outs:
-    - path: data/ruwiki-yo-segments-preprocessed.csv
-      md5: 390ed035c78ec301c4dddc873dede7cd
-      size: 293989965
-  split-dataset:
-    cmd: python -m scripts.split_dataset
+    - path: data/test-markups.jsonl.bz2
+      hash: md5
+      md5: 389040b22ee4729417eff75fc549d5e3
+      size: 3295471
+    - path: data/train-markups.jsonl.bz2
+      hash: md5
+      md5: b6b1edb8a5b27c18c6971f38fdd17b9e
+      size: 9888706
+    - path: data/vocab.txt
+      hash: md5
+      md5: d59ae80852599622065fdb9b915d7607
+      size: 172540
+  evaluate-model:
+    cmd: python -m scripts.evaluate_model --config-path params.yaml --markups-path
+      data/test-markups.jsonl.bz2 --vocab-path data/vocab.txt --save-path reports/metrics.json
     deps:
-    - path: data/ruwiki-yo-segments-preprocessed.csv
-      md5: 390ed035c78ec301c4dddc873dede7cd
-      size: 293989965
+    - path: data/test-markups.jsonl.bz2
+      hash: md5
+      md5: 389040b22ee4729417eff75fc549d5e3
+      size: 3295471
+    - path: data/vocab.txt
+      hash: md5
+      md5: d59ae80852599622065fdb9b915d7607
+      size: 172540
+    - path: params.yaml
+      hash: md5
+      md5: 775df219797640f43123c3cf2468c09c
+      size: 499
+    params:
+      params.yaml:
+        model:
+          name: DictModel
+          params:
+            safe: false
     outs:
-    - path: data/test.csv
-      md5: 953c148175a3ca1dff6efd51aed6bf23
-      size: 73802280
-    - path: data/train.csv
-      md5: 00502eb10c1e9e35b89f1c04d32f099b
-      size: 221436923
+    - path: reports/metrics.json
+      hash: md5
+      md5: bdd4b5cdc677de72311ae92eca69d838
+      size: 278

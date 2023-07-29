@@ -2,16 +2,17 @@
 
 References:
 https://github.com/e2yo/eyo-kernel/blob/09595c4b254027d92ac0776ea9c60a74e26be733/lib/eyo.js
+
 """
 
 import re
 
 from dataclasses import dataclass
 from functools import cmp_to_key
-from typing import List, Union
+from typing import Union
 
-from src import utils
-from src.yodict import YoDict
+from yogurt import utils
+from yogurt.yodict import YoDict
 
 
 @dataclass(frozen=True)
@@ -29,7 +30,10 @@ class Replacement:
 
     before: str
     after: str
-    position: Union[Position, List[Position]]
+
+    # todo: maybe fix the type to a sequence?
+    # makes more sense and easier to handle on the client code
+    position: Union[Position, list[Position]]
 
     @property
     def count(self) -> int:
@@ -44,30 +48,27 @@ class Eyo:
     def __init__(self, dictionary: YoDict) -> None:
         self.dictionary = dictionary
 
-    def lint(self, text: str, group: bool = False) -> List[Replacement]:
+    def lint(self, text: str, group: bool = False) -> list[Replacement]:
         """Returns all the possible `Е` -> `Ё` replacements in the given text."""
 
-        replacements = []
+        replacements: list[Replacement] = []
 
         if not text or not self._has_eyo(text):
             return replacements
 
         def replace(eword: re.Match[str]) -> str:
             pos = eword.start()
-            eword = eword.group()
-            yoword = self.dictionary.restore_word(eword)
-            if yoword != eword:
+            before = eword.group()
+            yoword = self.dictionary.restore_word(before)
+            if yoword != before:
                 replacements.append(
-                    Replacement(
-                        before=eword,
-                        after=yoword,
-                        position=self._get_position(text, pos)
-                    )
+                    Replacement(before=before, after=yoword, position=self._get_position(text, pos))
                 )
                 return yoword
-            return eword
+            return before
 
         text = re.sub(utils.WORDS_REGEX, replace, text)
+
         if group:
             replacements = sorted(replacements, key=cmp_to_key(self._compare_replacements))
             replacements = self._remove_duplicates(replacements)
@@ -95,8 +96,8 @@ class Eyo:
         return Position(line=len(lines) - 1, column=len(lines[-1]), index=index)
 
     @staticmethod
-    def _remove_duplicates(replacements: List[Replacement]) -> List[Replacement]:
-        position = {}
+    def _remove_duplicates(replacements: list[Replacement]) -> list[Replacement]:
+        position: dict[str, list] = {}
         result = []
         for repl in replacements:
             position.setdefault(repl.before, []).append(repl.position)
