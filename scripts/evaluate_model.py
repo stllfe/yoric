@@ -31,8 +31,8 @@ def build_model(config_path: str) -> YoModel:
 
 
 def save_metrics(metrics: EvaluateResult, save_path: Union[str, Path]) -> None:
-    with open(save_path, mode='w', encoding='utf-8') as f:
-        f.write(json.dumps(asdict(metrics), indent=2))
+    with open(save_path, mode='w', encoding='utf-8') as fd:
+        fd.write(json.dumps(asdict(metrics), indent=2) + '\n')
 
 
 def main(args: argparse.Namespace) -> None:

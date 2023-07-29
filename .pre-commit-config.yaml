@@ -62,14 +62,25 @@ repos:
     hooks:
     -   id: style
         name: format code
-        entry: make style DIFF=1
+        entry: make style COMM=1
         language: system
         pass_filenames: false
+        stages:
+          - commit
+    -   id: types
+        name: check static types
+        entry: make types COMM=1
+        language: system
+        pass_filenames: false
+        stages:
+          - commit
     -   id: lint
-        name: run code QA
-        entry: make lint DIFF=1
+        name: check code quality
+        entry: make lint COMM=1
         language: system
         pass_filenames: false
+        stages:
+          - commit
     -   id: tests
         name: run tests
         entry: make tests

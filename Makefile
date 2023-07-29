@@ -5,9 +5,10 @@ VENV = venv
 PKGS = $(VENV)/bin
 DIRS = yogurt scripts tests
 
-DIFF := 0
+DIFF := 1
+COMM := 0
 ifeq ($(DIFF), 1)
-    PYFILES := $(shell git diff --name-only --diff-filter=ACMRTUXB HEAD | grep -E '\.py$$')
+    PYFILES := $(shell git diff --name-only $(if $(filter 1, $(COMM)), --cached) --diff-filter=ACMRTUXB HEAD | grep -E '\.py$$')
 else
     PYFILES := $(shell find $(DIRS) -name '*.py' -type f -print | tr '\n' ' ')
 endif
@@ -15,11 +16,12 @@ endif
 .PHONY: help
 help:
 	@echo 'Usage: '
-	@echo '  make <command> [DIRS=dir1 dir2 ... DIFF={0,1}]'
+	@echo '  make <command> [DIRS=dir1 dir2 ... DIFF={0,1} COMM={0, 1}]'
 	@echo
 	@echo 'Options:'
-	@echo '  DIFF   whether to run commands only on changed files'
-	@echo '  DIRS   directories to use with commands if DIFF=0 (default)'
+	@echo '  DIFF   whether to run commands only on changed files (default: $(DIFF))'
+	@echo '  COMM   whether to use diff on staged files only (default: $(COMM))'
+	@echo '  DIRS   directories to use with commands if DIFF=0'
 	@echo
 	@echo 'Commands:'
 	@echo '  venv   create a virtual environment'
@@ -29,31 +31,36 @@ help:
 	@echo '  clean  clean all unnecessary files'
 	@echo '  tests  run tests'
 	@echo
-	@echo '  debug  check resolved option values'
+	@echo '  opt    show resolved option values'
 	@echo '  all    run all above (except venv)'
 
-.PHONY: debug
-debug:
-	@echo 'DIRS: $(DIRS)'
-	@echo 'PYFILES: $(PYFILES)'
+.PHONY: opt
+opt:
+	@echo 'SHELL=$(SHELL)'
+	@echo 'VENV=$(VENV)'
+	@echo 'PKGS=$(PKGS)'
+	@echo 'DIFF=$(DIFF)'
+	@echo 'COMM=$(COMM)'
+	@echo 'DIRS=$(DIRS)'
+	@echo 'PYFILES=$(PYFILES)'
 
 .show:
-	@printf 'Running on these files:\n  '
-	@echo $(PYFILES) | sed 's/ /\n  /g'
+	@echo 'Input:'
+	@echo '$(PYFILES)' | tr ' ' '\n' | sed 's/^/  /'
 	@echo
 
 .PHONY: types
-types:
+types: .show
 	@$(PKGS)/mypy --install-types --non-interactive $(PYFILES)
 
 .PHONY: lint
 lint: .show
 	@source $(PKGS)/activate && \
 	echo 'Flake8:'; \
-	flake8 $(PYFILES) && echo '• OK ✓'; \
-	echo ''; \
+	flake8 $(PYFILES) && echo 'OK ✓'; \
+	echo; \
 	echo 'Pylint:'; \
-	pylint -rn $(PYFILES) && echo '• OK ✓'
+	pylint -rn $(PYFILES) && echo 'OK ✓'
 
 .PHONY: style
 style: .show

@@ -12,7 +12,6 @@ import pytest
         ('Все-все понимают', 'Все-все понимают'),
     ],
 )
-def test_behaviour_on_control_samples(
-    example: str, expected: str
-) -> None:  # pylint: disable=unused-argument
+# pylint: disable=unused-argument
+def test_behaviour_on_control_samples(example: str, expected: str) -> None:
     pass
