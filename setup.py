@@ -1,6 +1,5 @@
 """Package setup script for Yogurt."""
 
-from setuptools import find_packages
 from setuptools import setup
 
 
@@ -23,11 +22,11 @@ setup(
     long_description_content_type='text/markdown',
     classifiers=[
         'License :: OSI Approved :: MIT License',
-        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.9',
         'Topic :: Scientific/Engineering :: Artificial Intelligence',
     ],
     keywords=['nlp', 'deeplearning', 'russian', 'yo', 'yoficator', 'yofication'],
-    packages=find_packages(exclude=['scripts', 'tests']),
+    packages=['yogurt'],
     python_requires='>=3.9',
     install_requires=requirements,
 )

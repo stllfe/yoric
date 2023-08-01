@@ -15,12 +15,14 @@ endif
 
 .PHONY: help
 help:
+	@echo 'Common developer commands for Yogurt project.'
+	@echo
 	@echo 'Usage: '
-	@echo '  make <command> [DIRS=dir1 dir2 ... DIFF={0,1} COMM={0, 1}]'
+	@echo '  make <command> [DIRS=dir1 dir2 ... DIFF={0,1} COMM={0,1}]'
 	@echo
 	@echo 'Options:'
-	@echo '  DIFF   whether to run commands only on changed files (default: $(DIFF))'
-	@echo '  COMM   whether to use diff on staged files only (default: $(COMM))'
+	@echo '  DIFF   run commands on changed files only (default: $(DIFF))'
+	@echo '  COMM   run commands on staged files only if DIFF=1 (default: $(COMM))'
 	@echo '  DIRS   directories to use with commands if DIFF=0'
 	@echo
 	@echo 'Commands:'
@@ -31,7 +33,7 @@ help:
 	@echo '  clean  clean all unnecessary files'
 	@echo '  tests  run tests'
 	@echo
-	@echo '  opt    show resolved option values'
+	@echo '  opt    files resolved option values'
 	@echo '  all    run all above (except venv)'
 
 .PHONY: opt
@@ -43,32 +45,6 @@ opt:
 	@echo 'COMM=$(COMM)'
 	@echo 'DIRS=$(DIRS)'
 	@echo 'PYFILES=$(PYFILES)'
-
-.show:
-	@echo 'Input:'
-	@echo '$(PYFILES)' | tr ' ' '\n' | sed 's/^/  /'
-	@echo
-
-.PHONY: types
-types: .show
-	@$(PKGS)/mypy --install-types --non-interactive $(PYFILES)
-
-.PHONY: lint
-lint: .show
-	@source $(PKGS)/activate && \
-	echo 'Flake8:'; \
-	flake8 $(PYFILES) && echo 'OK ✓'; \
-	echo; \
-	echo 'Pylint:'; \
-	pylint -rn $(PYFILES) && echo 'OK ✓'
-
-.PHONY: style
-style: .show
-	@$(PKGS)/isort $(PYFILES)
-	@$(PKGS)/autoflake8 --exit-zero-even-if-changed -r --in-place $(PYFILES)
-	@$(PKGS)/pyupgrade --exit-zero-even-if-changed --keep-runtime-typing --py39-plus $(PYFILES)
-	@$(PKGS)/unify -r --in-place $(PYFILES)
-	@$(PKGS)/black $(PYFILES)
 
 .ONESHELL:
 venv:
@@ -94,3 +70,39 @@ tests:
 	@$(PKGS)/pytest
 
 all: style types lint tests clean
+
+ifdef PYFILES
+.files:
+	@echo 'Files:'
+	@echo '$(PYFILES)' | tr ' ' '\n' | sed 's/^/  /'
+	@echo
+
+.PHONY: types
+types: .files
+	@$(PKGS)/mypy --install-types --non-interactive $(PYFILES)
+
+.PHONY: lint
+lint: .files
+	@source $(PKGS)/activate && \
+	echo 'Flake8:'; \
+	flake8 $(PYFILES) && echo 'OK ✓'; \
+	echo; \
+	echo 'Pylint:'; \
+	pylint -rn $(PYFILES) && echo 'OK ✓'
+
+.PHONY: style
+style: .files
+	@$(PKGS)/isort $(PYFILES)
+	@$(PKGS)/autoflake8 --exit-zero-even-if-changed -r --in-place $(PYFILES)
+	@$(PKGS)/pyupgrade --exit-zero-even-if-changed --keep-runtime-typing --py39-plus $(PYFILES)
+	@$(PKGS)/unify -r --in-place $(PYFILES)
+	@$(PKGS)/black $(PYFILES)
+else
+skip := style types lint
+$(skip): %:
+	@echo 'Running $@'
+	@echo 'No files to check. Maybe change DIFF or COMM flags?'
+	@echo 'Hint: make opt'
+	@echo
+	@exit 0
+endif

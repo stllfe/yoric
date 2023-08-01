@@ -9,7 +9,7 @@ ignore =
     # 2. long links in doc strings are an issue
     E501
     # flake8-builtins
-    # the likelihood of running into an issue when shadowing a buildin
+    # the likelihood of running into an issue when shadowing a builtin
     # with a class attribute is very low
     A003,
     # flake8-bugbear
