@@ -89,7 +89,7 @@ repos:
         stages:
           - push  # run tests only when pushing to remote
     -   id: clean
-        name: clean
+        name: clean files
         entry: make clean
         language: system
         pass_filenames: false

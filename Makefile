@@ -23,7 +23,7 @@ help:
 	@echo 'Options:'
 	@echo '  DIFF   run commands on changed files only (default: $(DIFF))'
 	@echo '  COMM   run commands on staged files only if DIFF=1 (default: $(COMM))'
-	@echo '  DIRS   directories to use with commands if DIFF=0'
+	@echo '  DIRS   directories to use with commands if DIFF=0 (default: $(DIRS))'
 	@echo
 	@echo 'Commands:'
 	@echo '  venv   create a virtual environment'
@@ -33,7 +33,7 @@ help:
 	@echo '  clean  clean all unnecessary files'
 	@echo '  tests  run tests'
 	@echo
-	@echo '  opt    files resolved option values'
+	@echo '  opt    show resolved option values'
 	@echo '  all    run all above (except venv)'
 
 .PHONY: opt
