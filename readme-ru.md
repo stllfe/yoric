@@ -1,4 +1,4 @@
-<img src="yoric.svg" style="width: 68px">
+<img src="yoric.svg" style="width: 72px">
 
 # Yöric | Yo Restoration In Context
 Йорик — умное восстановление буквы «ё» в русских текстах. Умное, потому что учитывает контекст.
