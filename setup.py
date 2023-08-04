@@ -3,6 +3,8 @@
 from setuptools import setup
 
 
+NAME = 'yoric'
+
 with open('README.md', encoding='utf-8') as file:
     readme_text = file.read()
 
@@ -15,9 +17,9 @@ with open('requirements.txt', encoding='utf-8') as file:
 
 
 setup(
-    name='yogurt',
-    version='0.0.1',
-    description='Context Aware YO Letter Restoration in Russian Texts ',
+    name=NAME,
+    version='0.1.0',
+    description='Context Aware YO Letter Restoration in Russian Texts.',
     long_description=readme_text,
     long_description_content_type='text/markdown',
     classifiers=[
@@ -26,7 +28,7 @@ setup(
         'Topic :: Scientific/Engineering :: Artificial Intelligence',
     ],
     keywords=['nlp', 'deeplearning', 'russian', 'yo', 'yoficator', 'yofication'],
-    packages=['yogurt'],
+    packages=[NAME],
     python_requires='>=3.9',
     install_requires=requirements,
 )
