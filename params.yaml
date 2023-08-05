@@ -2,6 +2,17 @@
 
 # data processing
 data:
-  num-segments: 1000000  # initial number of samples from wiki
-  max-text-length: 220  # the maximum text length in characters
-  test-size: 0.25  # data fraction to use for test
+  extract:
+    # num-segments: 10000000  # initial number of samples from wiki
+    max-text-length: 220  # the maximum text length in characters
+  generate:
+    strategy: downsample  # strategy for class balancing the data
+    min-word-count: 2
+    test-size: 0.25  # data fraction to use for test
+    compress: true
+
+# current best model (used by default in scripts/evaluate_model.py)
+model:
+  name: DictModel
+  params:
+    safe: false

@@ -4,3 +4,5 @@
     url = s3://yogurt
     listobjects = true
     endpointurl = https://gateway.storjshare.io
+[parsing]
+    bool = boolean_optional

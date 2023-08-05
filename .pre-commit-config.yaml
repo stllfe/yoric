@@ -1,6 +1,8 @@
 repos:
+
+# dvc state correctness checks
 - repo: https://github.com/iterative/dvc
-  rev: 2.52.0
+  rev: 3.9.0
   hooks:
   - id: dvc-pre-commit
     additional_dependencies:
@@ -22,7 +24,7 @@ repos:
     - post-checkout
     always_run: true
 - repo: https://github.com/iterative/dvc
-  rev: main
+  rev: 3.9.0
   hooks:
   - id: dvc-pre-commit
     additional_dependencies:
@@ -43,3 +45,51 @@ repos:
     stages:
     - post-checkout
     always_run: true
+
+# common handy checks
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+    -   id: trailing-whitespace
+    -   id: end-of-file-fixer
+    -   id: check-yaml
+    -   id: check-added-large-files
+        args: ['--maxkb=1000']
+        exclude: notebooks
+
+# local code quality checks
+-   repo: local
+    hooks:
+    -   id: style
+        name: format code
+        entry: make style COMM=1
+        language: system
+        pass_filenames: false
+        stages:
+          - commit
+    -   id: types
+        name: check static types
+        entry: make types COMM=1
+        language: system
+        pass_filenames: false
+        stages:
+          - commit
+    -   id: lint
+        name: check code quality
+        entry: make lint COMM=1
+        language: system
+        pass_filenames: false
+        stages:
+          - commit
+    -   id: tests
+        name: run tests
+        entry: make tests
+        language: system
+        pass_filenames: false
+        stages:
+          - push  # run tests only when pushing to remote
+    -   id: clean
+        name: clean files
+        entry: make clean
+        language: system
+        pass_filenames: false
