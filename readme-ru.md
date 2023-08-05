@@ -35,7 +35,7 @@
 - [ ] Аббревиатуры не обрабатываются
 
 ## Разработка
-Подробные гайды по разработке в репозитории доступны в [docs/development.md](docs/development.md).
+Подробные гайды по разработке в репозитории доступны в [docs/development.md](docs/development.md). Рекомендации по добавлению своих ML-экспериментов в [docs/experiments.md](docs/experiments.md).
 
 ## Ссылки
 + [eyo-kernel](https://www.npmjs.com/package/eyo-kernel)
