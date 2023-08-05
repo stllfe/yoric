@@ -3,11 +3,11 @@
 
 from tqdm import tqdm
 
-from yogurt import yodict
-from yogurt.eyo import Eyo
-from yogurt.eyo import Position
-from yogurt.model import YoModel
-from yogurt.model import YoWordSubstrings
+from yoric import yodict
+from yoric.eyo import Eyo
+from yoric.eyo import Position
+from yoric.model import YoModel
+from yoric.model import YoWordSubstrings
 
 
 class DictModel(YoModel):

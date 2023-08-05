@@ -12,8 +12,8 @@ from typing import Protocol, TYPE_CHECKING
 from corus.sources.wiki import load_wiki
 from tqdm import tqdm
 
-from yogurt import utils
-from yogurt import yodict
+from yoric import utils
+from yoric import yodict
 
 
 if TYPE_CHECKING:

@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Union
 
-from yogurt import utils
+from yoric import utils
 
 
 class Vocab:

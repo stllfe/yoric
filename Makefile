@@ -15,7 +15,7 @@ endif
 
 .PHONY: help
 help:
-	@echo 'Common developer commands for Yogurt project.'
+	@echo 'Common developer commands for Yoric project.'
 	@echo
 	@echo 'Usage: '
 	@echo '  make <command> [DIRS=dir1 dir2 ... DIFF={0,1} COMM={0,1}]'
@@ -51,7 +51,7 @@ venv:
 	@python -m venv $(VENV) && source $(PKGS)/activate
 	@pip install --upgrade pip setuptools wheel
 	@pip install -e .
-	@pre-commit install --hook-type pre-push --hook-type post-checkout --hook-type pre-commit
+	@pre-commit install
 	@pytest --fixtures --collect-only &> /dev/null
 	@echo '✓ Python virtual environment initialized sucessfully!'
 

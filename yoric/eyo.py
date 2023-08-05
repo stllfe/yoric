@@ -11,8 +11,8 @@ from dataclasses import dataclass
 from functools import cmp_to_key
 from typing import Union
 
-from yogurt import utils
-from yogurt.yodict import YoDict
+from yoric import utils
+from yoric.yodict import YoDict
 
 
 @dataclass(frozen=True)

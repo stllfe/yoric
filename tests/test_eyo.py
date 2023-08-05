@@ -1,7 +1,7 @@
 import pytest
 
-from yogurt import eyo
-from yogurt import yodict
+from yoric import eyo
+from yoric import yodict
 
 
 @pytest.fixture()

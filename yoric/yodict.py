@@ -14,7 +14,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Union
 
-from yogurt import consts
+from yoric import consts
 
 
 class YoDict:

@@ -23,9 +23,9 @@ from iterstrat.ml_stratifiers import MultilabelStratifiedShuffleSplit
 from numpy.typing import NDArray
 from tqdm import tqdm
 
-from yogurt import data
-from yogurt import utils
-from yogurt import yodict
+from yoric import data
+from yoric import utils
+from yoric import yodict
 
 
 SEED = 42

@@ -7,12 +7,12 @@ from dataclasses import asdict
 from pathlib import Path
 from typing import Union
 
-from yogurt import data
-from yogurt import models
-from yogurt import utils
-from yogurt.evaluate import evaluate_model
-from yogurt.evaluate import EvaluateResult
-from yogurt.model import YoModel
+from yoric import data
+from yoric import models
+from yoric import utils
+from yoric.evaluate import evaluate_model
+from yoric.evaluate import EvaluateResult
+from yoric.model import YoModel
 
 
 def build_model(config_path: str) -> YoModel:

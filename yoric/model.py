@@ -5,7 +5,7 @@ from __future__ import annotations
 from abc import ABC
 from abc import abstractmethod
 
-from yogurt.data import YeYoDataset
+from yoric.data import YeYoDataset
 
 
 YoWordSubstrings = list[tuple[int, int]]

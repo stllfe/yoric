@@ -10,10 +10,10 @@ from dataclasses import dataclass
 from sklearn import metrics
 from tqdm import tqdm
 
-from yogurt import utils
-from yogurt.data import YeYoDataset
-from yogurt.model import YoModel
-from yogurt.model import YoWordSubstrings
+from yoric import utils
+from yoric.data import YeYoDataset
+from yoric.model import YoModel
+from yoric.model import YoWordSubstrings
 
 
 @dataclass

@@ -1,4 +1,4 @@
-"""Package setup script for Yogurt."""
+"""Package setup script for Yoric."""
 
 from setuptools import setup
 

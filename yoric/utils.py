@@ -18,7 +18,7 @@ import razdel
 import simdjson
 import yaml
 
-from yogurt.yodict import YoDict
+from yoric.yodict import YoDict
 
 
 EMPTY = ''

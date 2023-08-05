@@ -8,7 +8,7 @@
 ├── reports                    — Финальные отчёты и метрики экспериментов
 ├── scripts                    – Скрипты для регулярных задач
 ├── tests                      — Тесты проекта
-├── yogurt                     — Основной код Python-пакета
+├── yoric                     — Основной код Python-пакета
 ├── .dvcignore                 — Файл исключений DVC
 ├── .flake8                    — Конфигурация линтера Flake8
 ├── .gitignore                 — Файл исключений Git
@@ -20,7 +20,7 @@
 ├── dvc.yaml                   — Конфигурация пайплайна данных DVC
 ├── params.yaml                — Конфигурация гиперпараметров для пайплайна DVC
 ├── pyproject.toml             — Прочие настройки Python-проекта
-├── readme-en.md               — Описание проекта EN (todo)
+├── readme-en.md               — Описание проекта EN (TODO)
 ├── readme-ru.md               — Описание проекта RU
 ├── requirements.txt           — Python-зависимости проекта
 └── setup.py                   — Скрипт сборки Python-пакета

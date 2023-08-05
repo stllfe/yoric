@@ -1,7 +1,7 @@
 import pytest
 
-from yogurt import utils
-from yogurt import yodict
+from yoric import utils
+from yoric import yodict
 
 
 @pytest.mark.parametrize(
