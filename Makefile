@@ -3,7 +3,7 @@
 SHELL = /bin/bash
 VENV = venv
 PKGS = $(VENV)/bin
-DIRS = yogurt scripts tests
+DIRS = yoric scripts tests
 
 DIFF := 1
 COMM := 0
@@ -22,7 +22,7 @@ help:
 	@echo
 	@echo 'Options:'
 	@echo '  DIFF   run commands on changed files only (default: $(DIFF))'
-	@echo '  COMM   run commands on staged files only if DIFF=1 (default: $(COMM))'
+	@echo '  COMM   run commands on staged files only (if DIFF=1) (default: $(COMM))'
 	@echo '  DIRS   directories to use with commands if DIFF=0 (default: $(DIRS))'
 	@echo
 	@echo 'Commands:'
@@ -100,7 +100,7 @@ style: .files
 else
 skip := style types lint
 $(skip): %:
-	@echo 'Running $@'
+	@echo 'Running $@ ...'
 	@echo 'No files to check. Maybe change DIFF or COMM flags?'
 	@echo 'Hint: make opt'
 	@echo

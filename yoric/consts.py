@@ -3,6 +3,9 @@
 from pathlib import Path
 
 
-PROJECT_PATH = Path(__file__).parent.parent
-NOT_SAFE_DICT_PATH = PROJECT_PATH / 'data' / 'not-safe.txt'
-SAFE_DICT_PATH = PROJECT_PATH / 'data' / 'safe.txt'
+PROJ_DIR = Path(__file__).parent.parent
+DATA_DIR = PROJ_DIR / 'data'
+MODEL_DIR = PROJ_DIR / 'model'
+
+NOT_SAFE_DICT_PATH = DATA_DIR / 'not-safe.txt'
+SAFE_DICT_PATH = DATA_DIR / 'safe.txt'
