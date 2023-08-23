@@ -48,11 +48,12 @@ opt:
 
 .ONESHELL:
 venv:
-	@python -m venv $(VENV) && source $(PKGS)/activate
-	@pip install --upgrade pip setuptools wheel
-	@pip install -e .
-	@pre-commit install
-	@pytest --fixtures --collect-only &> /dev/null
+	@python -m venv $(VENV)
+	@source $(PKGS)/activate && \
+	pip install --upgrade pip setuptools wheel && \
+	pip install -e . && \
+	pre-commit install && \
+	pytest --fixtures --collect-only &> /dev/null
 	@echo '✓ Python virtual environment initialized sucessfully!'
 
 .PHONY: clean
