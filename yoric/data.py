@@ -121,3 +121,15 @@ def load_markups(
     for kwargs in utils.load_jsonl(filepath, decompress=decompress):
         kwargs['spans'] = [utils.Substring(*span) for span in kwargs['spans']]
         yield YeYoMarkup(**kwargs)
+
+
+def load_dataset(
+    markups_path: Union[str, Path],
+    vocab_path: Union[str, Path],
+    decompress: bool = False,
+) -> YeYoDataset:
+    """Loads whole markups dataset from disk."""
+
+    return YeYoDataset(
+        markups=load_markups(markups_path, decompress=decompress), vocab=Vocab.load(vocab_path)
+    )
