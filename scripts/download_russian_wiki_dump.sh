@@ -3,4 +3,4 @@
 set -e
 
 mkdir -p data;
-curl -Lo data/ruwiki-latest-pages-articles.xml.bz2 https://dumps.wikimedia.org/ruwiki/latest/ruwiki-latest-pages-articles.xml.bz2;
+curl -Lo data/ruwiki-latest-pages-articles.xml.bz2 https://dumps.wikimedia.org/ruwiki/20230820/ruwiki-20230820-pages-articles-multistream.xml.bz2;

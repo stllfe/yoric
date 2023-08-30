@@ -2,17 +2,25 @@ schema: '2.0'
 stages:
   download-ruwiki:
     cmd: scripts/download_russian_wiki_dump.sh
+    deps:
+    - path: scripts/download_russian_wiki_dump.sh
+      hash: md5
+      md5: 7ca919b2cb9f2c51c243d624e3e5ba09
+      size: 181
     outs:
     - path: data/ruwiki-latest-pages-articles.xml.bz2
-      md5: 01bed521f67bedf76fd561377bd3c3ec
-      size: 4996155242
+      hash: md5
+      md5: 0a071a40df2edf25a0834db3e8b57da6
+      size: 5282465397
   download-eyo-dicts:
     cmd: scripts/download_eyo_kernel_dicts.sh
     outs:
     - path: data/not-safe.txt
+      hash: md5
       md5: b840d675d69f7b37659a5950194bc629
       size: 242758
     - path: data/safe.txt
+      hash: md5
       md5: a0c4cb74b6dd0a97fd8f1c78495028dc
       size: 864955
   extract-segments-from-wiki:
@@ -20,12 +28,14 @@ stages:
       -o data/ruwiki-yo-segments.txt
     deps:
     - path: data/ruwiki-latest-pages-articles.xml.bz2
-      md5: 01bed521f67bedf76fd561377bd3c3ec
-      size: 4996155242
+      hash: md5
+      md5: 0a071a40df2edf25a0834db3e8b57da6
+      size: 5282465397
     outs:
     - path: data/ruwiki-yo-segments.txt
-      md5: a10a714dced2c8df675cdcfabf49f7a4
-      size: 241764687
+      hash: md5
+      md5: 2b3dbc412cb45986ec63d6c0b220a074
+      size: 247752684
   generate-dataset:
     cmd: python -m scripts.generate_dataset --strategy downsample --min-word-count
       2 --test-size 0.25 --compress --vocab-filename vocab.txt --markups-filename
@@ -33,37 +43,37 @@ stages:
     deps:
     - path: data/ruwiki-latest-pages-articles.xml.bz2
       hash: md5
-      md5: 01bed521f67bedf76fd561377bd3c3ec
-      size: 4996155242
+      md5: 0a071a40df2edf25a0834db3e8b57da6
+      size: 5282465397
     - path: data/ruwiki-yo-segments.txt
       hash: md5
-      md5: a10a714dced2c8df675cdcfabf49f7a4
-      size: 241764687
+      md5: 2b3dbc412cb45986ec63d6c0b220a074
+      size: 247752684
     outs:
     - path: data/test-markups.jsonl.bz2
       hash: md5
-      md5: 389040b22ee4729417eff75fc549d5e3
-      size: 3295471
+      md5: 34bea84c2564f26b839c7bafd0bd3e1e
+      size: 3362929
     - path: data/train-markups.jsonl.bz2
       hash: md5
-      md5: b6b1edb8a5b27c18c6971f38fdd17b9e
-      size: 9888706
+      md5: 225ee7f02b8eea367134e734a046f973
+      size: 10050965
     - path: data/vocab.txt
       hash: md5
-      md5: d59ae80852599622065fdb9b915d7607
-      size: 172540
+      md5: e9bbb7087381f384893ed8c014c689d0
+      size: 173105
   evaluate-model:
     cmd: python -m scripts.evaluate_model --config-path params.yaml --markups-path
       data/test-markups.jsonl.bz2 --vocab-path data/vocab.txt --save-path reports/metrics.json
     deps:
     - path: data/test-markups.jsonl.bz2
       hash: md5
-      md5: 389040b22ee4729417eff75fc549d5e3
-      size: 3295471
+      md5: 34bea84c2564f26b839c7bafd0bd3e1e
+      size: 3362929
     - path: data/vocab.txt
       hash: md5
-      md5: d59ae80852599622065fdb9b915d7607
-      size: 172540
+      md5: e9bbb7087381f384893ed8c014c689d0
+      size: 173105
     - path: params.yaml
       hash: md5
       md5: 775df219797640f43123c3cf2468c09c
@@ -77,5 +87,5 @@ stages:
     outs:
     - path: reports/metrics.json
       hash: md5
-      md5: 99f8ff6537db856581bef220e2faebbb
-      size: 270
+      md5: cd53ac4b22f70f8ad3553ec221a46731
+      size: 282
