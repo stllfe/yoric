@@ -12,6 +12,8 @@ vars:
 stages:
   download-ruwiki:
     cmd: scripts/download_russian_wiki_dump.sh
+    deps:
+      - scripts/download_russian_wiki_dump.sh
     outs:
       - ${WIKI_DATA_PATH}
   download-eyo-dicts:
