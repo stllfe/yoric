@@ -92,10 +92,12 @@ def load_jsonl(filepath: Union[str, Path], decompress: bool = False) -> Iterable
                 del parsed
 
 
-def load_yaml(filepath: Union[str, Path], section: Optional[str] = None) -> dict[str, Any]:
+def load_yaml(filepath: Union[str, Path], section: Optional[str] = None) -> Any:
     with open(filepath, encoding='utf-8') as fp:
         data = yaml.safe_load(fp)
-        return data[section] if section else data  # type: ignore # returns Any by design
+        for subs in section.split('.') if section else ():
+            data = data[subs]
+        return data  # returns Any by design
 
 
 def split_sentences(text: str) -> list[str]:

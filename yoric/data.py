@@ -25,6 +25,9 @@ class Vocab:
     def __len__(self) -> int:
         return len(self._word2label)
 
+    def __iter__(self) -> Iterator[str]:
+        return iter(self._label2word[i] for i in range(len(self)))
+
     def __contains__(self, key: Any) -> bool:
         try:
             self.__getitem__(key)

@@ -9,3 +9,6 @@ MODEL_DIR = PROJ_DIR / 'model'
 
 NOT_SAFE_DICT_PATH = DATA_DIR / 'not-safe.txt'
 SAFE_DICT_PATH = DATA_DIR / 'safe.txt'
+
+CPU = 'cpu'
+GPU = 'cuda'

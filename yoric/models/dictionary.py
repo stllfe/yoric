@@ -7,7 +7,7 @@ from yoric import yodict
 from yoric.eyo import Eyo
 from yoric.eyo import Position
 from yoric.model import YoModel
-from yoric.model import YoWordSubstrings
+from yoric.model import YoWordSubstring
 
 
 class DictModel(YoModel):
@@ -18,18 +18,18 @@ class DictModel(YoModel):
         yo_dict = yodict.get_safe() if safe else yodict.get_not_safe()
         self.model = Eyo(yo_dict)
 
-    def _predict(self, text: str) -> YoWordSubstrings:
+    def _predict(self, text: str) -> list[YoWordSubstring]:
         """Predicts yo word substrings for a single string."""
 
         res = []
         for replacement in self.model.lint(text):
             assert isinstance(replacement.position, Position)  # fix: see replacement class
-            start_word = replacement.position.index
-            end_word = start_word + len(replacement.after)
-            res.append((start_word, end_word))
+            start = replacement.position.index
+            end = start + len(replacement.after)
+            res.append(YoWordSubstring(start, end, 1))
         return res
 
-    def predict(self, data: list[str], verbose: bool = False) -> list[YoWordSubstrings]:
+    def predict(self, data: list[str], verbose: bool = False) -> list[list[YoWordSubstring]]:
         """Predicts yo word substrings."""
 
         if verbose:
