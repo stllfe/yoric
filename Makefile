@@ -80,7 +80,7 @@ ifdef PYFILES
 
 .PHONY: types
 types: .files
-	@$(PKGS)/mypy --install-types --non-interactive $(PYFILES)
+	@$(PKGS)/mypy --install-types --non-interactive --follow-imports=silent $(PYFILES)
 
 .PHONY: lint
 lint: .files
