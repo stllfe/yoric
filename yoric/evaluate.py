@@ -26,13 +26,19 @@ TableFormat = Literal['plain', 'simple', 'grid', 'simple_grid', 'rounded_grid', 
 class Metrics:
     """Model evaluation metrics."""
 
+    # classification
     accuracy: float
     precision: float
     recall: float
+    fp: int
+    fn: int
+    support: int
     log_loss: float
     f1_score: float
     fh_score: float
     auroc: float
+
+    # speed performance
     wall_time: float
     cpu_time: float
     tokens_per_sec: float
@@ -62,10 +68,15 @@ def evaluate_model(model: YoModel, dataset: YeYoDataset, verbose: bool = False) 
 
     trues, preds, scores = unroll_predictions(list(dataset), outs)
 
+    _, fp, fn, tp = M.confusion_matrix(trues, preds).ravel()
+
     metrics = Metrics(
         accuracy=float(M.accuracy_score(trues, preds)),
         precision=float(M.precision_score(trues, preds)),
         recall=float(M.recall_score(trues, preds)),
+        fp=int(fp),
+        fn=int(fn),
+        support=int(tp),
         log_loss=float(M.log_loss(trues, scores)),
         f1_score=float(M.f1_score(trues, preds)),
         fh_score=float(M.fbeta_score(trues, preds, beta=0.5)),
@@ -115,14 +126,14 @@ def unroll_predictions(
     return trues_binary, preds_binary, preds_scores
 
 
-def make_table(metrics: Metrics, floatf: str = '.2f', kind: TableFormat = 'simple') -> str:
+def make_table(metrics: Metrics, precision: int = 3, kind: TableFormat = 'simple') -> str:
     """Formats evaluation result as a table."""
 
     return tabulate(
-        [[n, v] for n, v in metrics.items()],
-        headers=['name', 'value'],
+        [[m, round(v, precision)] for m, v in metrics.items()],
+        headers=['metric', 'value'],
+        floatfmt='.9g',
         tablefmt=kind,
-        floatfmt=floatf,
     )
 
 
