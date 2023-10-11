@@ -306,3 +306,9 @@ def yeficate(text: str) -> str:
     """Replaces `Ё` to `Е` letters."""
 
     return text.replace('Ё', 'Е').replace('ё', 'е')
+
+
+def get_tokens_count(text: str) -> int:
+    """Calculates count of tokens in a text."""
+
+    return len(list(re.finditer(WORDS_REGEX, text)))

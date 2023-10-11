@@ -1,6 +1,5 @@
 """Model performance evaluation stuff."""
 
-import re
 import time
 
 from collections.abc import ItemsView
@@ -20,6 +19,8 @@ from yoric.model import YoWordSubstring
 
 SubstringLike = Union[YoWordSubstring, utils.Substring, tuple[int, int]]
 TableFormat = Literal['plain', 'simple', 'grid', 'simple_grid', 'rounded_grid', 'outline']
+
+TABLE_NUMBER_FORMAT = '.9g'
 
 
 @dataclass(frozen=True)
@@ -45,12 +46,6 @@ class Metrics:
 
     def items(self) -> ItemsView[str, float]:
         return asdict(self).items()
-
-
-def get_tokens_count(text: str) -> int:
-    """Calculates count of tokens in a text."""
-
-    return len(list(re.finditer(utils.WORDS_REGEX, text)))
 
 
 def evaluate_model(model: YoModel, dataset: YeYoDataset, verbose: bool = False) -> Metrics:
@@ -83,7 +78,7 @@ def evaluate_model(model: YoModel, dataset: YeYoDataset, verbose: bool = False) 
         auroc=float(M.roc_auc_score(trues, scores)),
         wall_time=wall_time,
         cpu_time=cpu_time,
-        tokens_per_sec=sum(map(get_tokens_count, X)) / wall_time,
+        tokens_per_sec=sum(map(utils.get_tokens_count, X)) / wall_time,
     )
 
     if verbose:
@@ -132,7 +127,7 @@ def make_table(metrics: Metrics, precision: int = 3, kind: TableFormat = 'simple
     return tabulate(
         [[m, round(v, precision)] for m, v in metrics.items()],
         headers=['metric', 'value'],
-        floatfmt='.9g',
+        floatfmt=TABLE_NUMBER_FORMAT,
         tablefmt=kind,
     )
 
