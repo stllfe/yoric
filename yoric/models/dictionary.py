@@ -15,19 +15,18 @@ class DictModel(YoModel):
 
     def __init__(self, safe: bool = True) -> None:
         super().__init__()
-        yo_dict = yodict.get_safe() if safe else yodict.get_not_safe()
-        self.model = Eyo(yo_dict)
+        self.model = Eyo(yodict.get_safe() if safe else yodict.get_not_safe())
 
     def _predict(self, text: str) -> list[YoWordSubstring]:
         """Predicts yo word substrings for a single string."""
 
-        res = []
+        spans = []
         for replacement in self.model.lint(text):
             assert isinstance(replacement.position, Position)  # fix: see replacement class
             start = replacement.position.index
             end = start + len(replacement.after)
-            res.append(YoWordSubstring(start, end, 1))
-        return res
+            spans.append(YoWordSubstring(start, end, 1))
+        return spans
 
     def predict(self, data: list[str], verbose: bool = False) -> list[list[YoWordSubstring]]:
         """Predicts yo word substrings."""
