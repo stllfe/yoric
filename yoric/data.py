@@ -96,7 +96,7 @@ class YeYoDataset:
         return len(self._markups)
 
     def __iter__(self) -> Iterator[YeYoMarkup]:
-        return iter(self[index] for index in range(len(self)))
+        return iter(self._markups)
 
     @property
     def vocab(self) -> Vocab:

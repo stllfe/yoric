@@ -1,11 +1,15 @@
 """Model performance evaluation stuff."""
 
+from __future__ import annotations
+
 import time
 
 from collections.abc import ItemsView
+from collections.abc import Mapping
+from collections.abc import Sequence
 from dataclasses import asdict
 from dataclasses import dataclass
-from typing import Literal, Union
+from typing import Final, Literal, Union
 
 from sklearn import metrics as M
 from tabulate import tabulate
@@ -18,16 +22,32 @@ from yoric.model import YoWordSubstring
 
 
 SubstringLike = Union[YoWordSubstring, utils.Substring, tuple[int, int]]
-TableFormat = Literal['plain', 'simple', 'grid', 'simple_grid', 'rounded_grid', 'outline']
+TableStyle = Literal[
+    'plain', 'simple', 'grid', 'simple_grid', 'rounded_grid', 'outline', 'rounded_outline'
+]
 
+TABLE_DEFAULT_STYLE: Final = 'rounded_outline'
 TABLE_NUMBER_FORMAT = '.9g'
 
 
-@dataclass(frozen=True)
-class Metrics:
-    """Model evaluation metrics."""
+class ItemsMixin:
+    def items(self) -> ItemsView[str, float]:
+        return asdict(self).items()  # type: ignore
 
-    # classification
+
+@dataclass(frozen=True)
+class Timings(ItemsMixin):
+    """Model speed measurements."""
+
+    wall_time: float
+    cpu_time: float
+    tokens_per_sec: float
+
+
+@dataclass(frozen=True)
+class Metrics(ItemsMixin):
+    """Model quality metrics."""
+
     accuracy: float
     precision: float
     recall: float
@@ -39,16 +59,38 @@ class Metrics:
     fh_score: float
     auroc: float
 
-    # speed performance
-    wall_time: float
-    cpu_time: float
-    tokens_per_sec: float
+    @classmethod
+    def from_predictions(cls, trues: list[int], preds: list[int], scores: list[float]) -> Metrics:
+        """Calculates the metrics from the given inputs and outputs."""
 
-    def items(self) -> ItemsView[str, float]:
-        return asdict(self).items()
+        _, fp, fn, tp = M.confusion_matrix(trues, preds).ravel()
+
+        return Metrics(
+            accuracy=float(M.accuracy_score(trues, preds)),
+            precision=float(M.precision_score(trues, preds)),
+            recall=float(M.recall_score(trues, preds)),
+            fp=int(fp),
+            fn=int(fn),
+            support=int(tp) + int(fn),
+            log_loss=float(M.log_loss(trues, scores)),
+            f1_score=float(M.f1_score(trues, preds)),
+            fh_score=float(M.fbeta_score(trues, preds, beta=0.5)),
+            auroc=float(M.roc_auc_score(trues, scores)),
+        )
 
 
-def evaluate_model(model: YoModel, dataset: YeYoDataset, verbose: bool = False) -> Metrics:
+@dataclass
+class Evaluation:
+    """All-around model performance evaluation."""
+
+    metrics: Metrics
+    timings: Timings
+
+    def table(self) -> str:
+        return make_table({**asdict(self.metrics), **asdict(self.timings)})
+
+
+def evaluate_model(model: YoModel, dataset: YeYoDataset, verbose: bool = False) -> Evaluation:
     """Runs metrics calculation on the given model and dataset."""
 
     X = [utils.yeficate(markup.text) for markup in dataset]
@@ -63,34 +105,16 @@ def evaluate_model(model: YoModel, dataset: YeYoDataset, verbose: bool = False) 
 
     trues, preds, scores = unroll_predictions(list(dataset), outs)
 
-    _, fp, fn, tp = M.confusion_matrix(trues, preds).ravel()
+    metrics = Metrics.from_predictions(trues, preds, scores)
+    timings = Timings(wall_time, cpu_time, sum(map(utils.get_tokens_count, X)) / wall_time)
 
-    metrics = Metrics(
-        accuracy=float(M.accuracy_score(trues, preds)),
-        precision=float(M.precision_score(trues, preds)),
-        recall=float(M.recall_score(trues, preds)),
-        fp=int(fp),
-        fn=int(fn),
-        support=int(tp),
-        log_loss=float(M.log_loss(trues, scores)),
-        f1_score=float(M.f1_score(trues, preds)),
-        fh_score=float(M.fbeta_score(trues, preds, beta=0.5)),
-        auroc=float(M.roc_auc_score(trues, scores)),
-        wall_time=wall_time,
-        cpu_time=cpu_time,
-        tokens_per_sec=sum(map(utils.get_tokens_count, X)) / wall_time,
-    )
-
-    if verbose:
-        print(make_table(metrics))
-
-    return metrics
+    return Evaluation(metrics, timings)
 
 
 def unroll_predictions(
     markups: list[YeYoMarkup], preds: list[list[YoWordSubstring]]
 ) -> tuple[list[int], list[int], list[float]]:
-    """Aligns and flattens model predictions with the markups.
+    """Flattens and aligns model predictions with the true labels from the markups.
 
     Returns:
         A tuple of `true`, `pred`, `score` lists.
@@ -121,14 +145,19 @@ def unroll_predictions(
     return trues_binary, preds_binary, preds_scores
 
 
-def make_table(metrics: Metrics, precision: int = 3, kind: TableFormat = 'simple') -> str:
+def make_table(
+    mapping: Mapping[str, float],
+    precision: int = 3,
+    headers: Sequence[str] = (),
+    style: TableStyle = TABLE_DEFAULT_STYLE,
+) -> str:
     """Formats evaluation result as a table."""
 
     return tabulate(
-        [[m, round(v, precision)] for m, v in metrics.items()],
-        headers=['metric', 'value'],
+        [[k, round(v, precision)] for k, v in mapping.items()],
         floatfmt=TABLE_NUMBER_FORMAT,
-        tablefmt=kind,
+        tablefmt=style,
+        headers=headers,
     )
 
 
