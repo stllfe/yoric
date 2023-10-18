@@ -87,5 +87,5 @@ stages:
     outs:
     - path: reports/metrics.json
       hash: md5
-      md5: cd53ac4b22f70f8ad3553ec221a46731
-      size: 282
+      md5: 38dfea03ee409e4aad914cc29f50a47a
+      size: 415
