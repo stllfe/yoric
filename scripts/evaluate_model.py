@@ -11,7 +11,7 @@ from yoric import data
 from yoric import models
 from yoric import utils
 from yoric.evaluate import evaluate_model
-from yoric.evaluate import Metrics
+from yoric.evaluate import Evaluation
 from yoric.model import YoModel
 
 
@@ -30,9 +30,9 @@ def build_model(config_path: str) -> YoModel:
     return cls(**params)
 
 
-def save_metrics(metrics: Metrics, save_path: Union[str, Path]) -> None:
+def save_evalution(evaluation: Evaluation, save_path: Union[str, Path]) -> None:
     with open(save_path, mode='w', encoding='utf-8') as fd:
-        fd.write(json.dumps(asdict(metrics), indent=2) + '\n')
+        fd.write(json.dumps(asdict(evaluation), indent=2) + '\n')
 
 
 def main(args: argparse.Namespace) -> None:
@@ -40,16 +40,15 @@ def main(args: argparse.Namespace) -> None:
     model = build_model(args.config_path)
     print(f'Model loaded: {type(model)}')
 
-    dataset = data.YeYoDataset(
-        markups=data.load_markups(args.markups_path),
-        vocab=data.Vocab.load(args.vocab_path),
-    )
+    dataset = data.load_dataset(args.markups_path, args.vocab_path)
     print(f'Using markups: {args.markups_path}')
-    print(f'Using vocab: {args.vocab_path}', end='\n\n')
+    print(f'Using vocab: {args.vocab_path}')
 
-    metrics = evaluate_model(model, dataset, verbose=True)
+    evaluation = evaluate_model(model, dataset, verbose=True)
+    print(evaluation.table())
+
     if args.save_path:
-        save_metrics(metrics, args.save_path)
+        save_evalution(evaluation, args.save_path)
         print(f'Results saved: {args.save_path}')
 
 
