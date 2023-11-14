@@ -1,12 +1,14 @@
 autoflake8==0.4.0
 black==23.7.0
 corus==0.9.0
-dvc[s3]==3.9.1
+dvc[s3]==3.22.1
+dvclive==3.0.0
 flake8==6.0.0
 humanfriendly==10.0
 iterative-stratification==0.1.7
 mypy-extensions==1.0.0
 mypy==1.4.1
+navec==0.10.0
 numpy==1.23.3
 pandas==1.5.0
 pre-commit==3.3.3
@@ -17,5 +19,9 @@ pytest==7.4.0
 pyupgrade==3.9.0
 razdel==0.5.0
 scikit-learn==1.2.2
+torch==2.0.1
+torchinfo==1.8.0
+torchinfo==1.8.0
 tqdm==4.64.1
+tyro==0.5.7
 unify==0.5

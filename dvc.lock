@@ -89,3 +89,15 @@ stages:
       hash: md5
       md5: 38dfea03ee409e4aad914cc29f50a47a
       size: 415
+  download-pretrained-embeddings:
+    cmd: scripts/download_pretrained_embeddings.sh
+    deps:
+    - path: scripts/download_pretrained_embeddings.sh
+      hash: md5
+      md5: 789c3ef82b98ef354406bfed627a3f45
+      size: 178
+    outs:
+    - path: data/navec_hudlit_v1_12B_500K_300d_100q.tar
+      hash: md5
+      md5: 44313cfe6bb81ecdaef94d20f553a102
+      size: 53012480

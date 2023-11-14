@@ -1,26 +1,34 @@
 # DVC data processing pipeline
 vars:
-  - DATA_DIR: data
-  - SAFE_DICT_PATH: data/safe.txt
-  - NOT_SAFE_DICT_PATH: data/not-safe.txt
-  - WIKI_DATA_PATH: data/ruwiki-latest-pages-articles.xml.bz2
-  - SEGM_DATA_PATH: data/ruwiki-yo-segments.txt
-  - VOCAB_FILENAME: vocab.txt
-  - MARKUPS_FILENAME: markups.jsonl.bz2
-  - CONFIG_PATH: params.yaml
-  - METRICS_PATH: reports/metrics.json
+- DATA_DIR: data
+- MODEL_DIR: model
+- NAVEC_PATH: data/navec_hudlit_v1_12B_500K_300d_100q.tar
+- SAFE_DICT_PATH: data/safe.txt
+- NOT_SAFE_DICT_PATH: data/not-safe.txt
+- WIKI_DATA_PATH: data/ruwiki-latest-pages-articles.xml.bz2
+- SEGM_DATA_PATH: data/ruwiki-yo-segments.txt
+- VOCAB_FILENAME: vocab.txt
+- MARKUPS_FILENAME: markups.jsonl.bz2
+- CONFIG_PATH: params.yaml
+- METRICS_PATH: reports/metrics.json
 stages:
   download-ruwiki:
     cmd: scripts/download_russian_wiki_dump.sh
     deps:
-      - scripts/download_russian_wiki_dump.sh
+    - scripts/download_russian_wiki_dump.sh
     outs:
-      - ${WIKI_DATA_PATH}
+    - ${WIKI_DATA_PATH}
   download-eyo-dicts:
     cmd: scripts/download_eyo_kernel_dicts.sh
     outs:
-      - ${SAFE_DICT_PATH}
-      - ${NOT_SAFE_DICT_PATH}
+    - ${SAFE_DICT_PATH}
+    - ${NOT_SAFE_DICT_PATH}
+  download-pretrained-embeddings:
+    cmd: scripts/download_pretrained_embeddings.sh
+    deps:
+    - scripts/download_pretrained_embeddings.sh
+    outs:
+    - ${NAVEC_PATH}
   extract-segments-from-wiki:
     cmd: >-
       python -m scripts.extract_segments_from_wiki
@@ -28,9 +36,9 @@ stages:
       -i ${WIKI_DATA_PATH}
       -o ${SEGM_DATA_PATH}
     deps:
-      - ${WIKI_DATA_PATH}
+    - ${WIKI_DATA_PATH}
     outs:
-      - ${SEGM_DATA_PATH}
+    - ${SEGM_DATA_PATH}
   generate-dataset:
     cmd: >-
       python -m scripts.generate_dataset
@@ -40,12 +48,27 @@ stages:
       -i ${SEGM_DATA_PATH}
       -O ${DATA_DIR}
     deps:
-      - ${WIKI_DATA_PATH}
-      - ${SEGM_DATA_PATH}
+    - ${WIKI_DATA_PATH}
+    - ${SEGM_DATA_PATH}
     outs:
-      - ${DATA_DIR}/train-${MARKUPS_FILENAME}
-      - ${DATA_DIR}/test-${MARKUPS_FILENAME}
-      - ${DATA_DIR}/${VOCAB_FILENAME}
+    - ${DATA_DIR}/train-${MARKUPS_FILENAME}
+    - ${DATA_DIR}/test-${MARKUPS_FILENAME}
+    - ${DATA_DIR}/${VOCAB_FILENAME}
+  train-model:
+    cmd: >-
+      python -m scripts.train_model
+      ${model.train}
+      --navec-path ${NAVEC_PATH}
+      --vocab-path ${DATA_DIR}/${VOCAB_FILENAME}
+      --train-markups-path ${DATA_DIR}/train-${MARKUPS_FILENAME}
+      --test-markups-path ${DATA_DIR}/test-${MARKUPS_FILENAME}
+    deps:
+    - ${DATA_DIR}/train-${MARKUPS_FILENAME}
+    - ${DATA_DIR}/test-${MARKUPS_FILENAME}
+    - ${DATA_DIR}/${VOCAB_FILENAME}
+    - ${NAVEC_PATH}
+    outs:
+    - ${MODEL_DIR}
   evaluate-model:
     cmd: >-
       python -m scripts.evaluate_model
@@ -54,11 +77,36 @@ stages:
       --vocab-path ${DATA_DIR}/${VOCAB_FILENAME}
       --save-path ${METRICS_PATH}
     deps:
-      - ${DATA_DIR}/test-${MARKUPS_FILENAME}
-      - ${DATA_DIR}/${VOCAB_FILENAME}
-      - ${CONFIG_PATH}
+    - ${DATA_DIR}/test-${MARKUPS_FILENAME}
+    - ${DATA_DIR}/${VOCAB_FILENAME}
+    - ${CONFIG_PATH}
+    - ${MODEL_DIR}
     params:
-    - model
+    - model.name
+    - model.params
     metrics:
     - ${METRICS_PATH}:
         cache: false
+params:
+- dvclive/params.yaml
+artifacts:
+  model:
+    path: model/model.pt
+    type: model
+    desc: model checkpoint
+  vocab:
+    path: model/vocab.txt
+    type: vocab
+    desc: model vocab
+metrics:
+- dvclive/metrics.json
+plots:
+- dvclive/plots/metrics:
+    x: step
+- dvclive/plots/sklearn/test/pr_curve.json:
+    template: simple
+    x: recall
+    y: precision
+    title: Precision-Recall Curve
+    x_label: Recall
+    y_label: Precision
