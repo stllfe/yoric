@@ -97,4 +97,4 @@
 
 ## Диаграмма
 
-<img src="model.svg" style="width: 100%">
+<img src="model.svg" style="width: 400px">
