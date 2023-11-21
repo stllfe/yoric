@@ -20,6 +20,8 @@ stages:
     - ${WIKI_DATA_PATH}
   download-eyo-dicts:
     cmd: scripts/download_eyo_kernel_dicts.sh
+    deps:
+      - scripts/download_eyo_kernel_dicts.sh
     outs:
     - ${SAFE_DICT_PATH}
     - ${NOT_SAFE_DICT_PATH}
@@ -36,7 +38,13 @@ stages:
       -i ${WIKI_DATA_PATH}
       -o ${SEGM_DATA_PATH}
     deps:
+<<<<<<< HEAD
     - ${WIKI_DATA_PATH}
+=======
+      - ${WIKI_DATA_PATH}
+      - ${SAFE_DICT_PATH}
+      - ${NOT_SAFE_DICT_PATH}
+>>>>>>> ceca7db (update: fix eyo dictionaries versions, reproduce again, update dvc config and docs)
     outs:
     - ${SEGM_DATA_PATH}
   generate-dataset:
@@ -48,8 +56,10 @@ stages:
       -i ${SEGM_DATA_PATH}
       -O ${DATA_DIR}
     deps:
-    - ${WIKI_DATA_PATH}
-    - ${SEGM_DATA_PATH}
+      - ${WIKI_DATA_PATH}
+      - ${SEGM_DATA_PATH}
+      - ${SAFE_DICT_PATH}
+      - ${NOT_SAFE_DICT_PATH}
     outs:
     - ${DATA_DIR}/train-${MARKUPS_FILENAME}
     - ${DATA_DIR}/test-${MARKUPS_FILENAME}

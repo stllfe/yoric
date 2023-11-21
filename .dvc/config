@@ -1,8 +1,10 @@
 [core]
     remote = s3
+[parsing]
+    bool = boolean_optional
+[cache]
+    type = "hardlink,symlink"
 ['remote "s3"']
     url = s3://yogurt
     listobjects = true
     endpointurl = https://gateway.storjshare.io
-[parsing]
-    bool = boolean_optional

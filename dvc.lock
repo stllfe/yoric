@@ -14,66 +14,87 @@ stages:
       size: 5282465397
   download-eyo-dicts:
     cmd: scripts/download_eyo_kernel_dicts.sh
+    deps:
+    - path: scripts/download_eyo_kernel_dicts.sh
+      hash: md5
+      md5: 40d3e1bfd903284faac33ea61a0b2ed3
+      size: 310
     outs:
     - path: data/not-safe.txt
       hash: md5
-      md5: b840d675d69f7b37659a5950194bc629
-      size: 242758
+      md5: ec5f0115a62d944f6cd2e1f8581823be
+      size: 242799
     - path: data/safe.txt
       hash: md5
-      md5: a0c4cb74b6dd0a97fd8f1c78495028dc
-      size: 864955
+      md5: 9ee382053bc78a616ce026d2aeda20a0
+      size: 864914
   extract-segments-from-wiki:
     cmd: python -m scripts.extract_segments_from_wiki --max-text-length 220 -i data/ruwiki-latest-pages-articles.xml.bz2
       -o data/ruwiki-yo-segments.txt
     deps:
+    - path: data/not-safe.txt
+      hash: md5
+      md5: ec5f0115a62d944f6cd2e1f8581823be
+      size: 242799
     - path: data/ruwiki-latest-pages-articles.xml.bz2
       hash: md5
       md5: 0a071a40df2edf25a0834db3e8b57da6
       size: 5282465397
+    - path: data/safe.txt
+      hash: md5
+      md5: 9ee382053bc78a616ce026d2aeda20a0
+      size: 864914
     outs:
     - path: data/ruwiki-yo-segments.txt
       hash: md5
-      md5: 2b3dbc412cb45986ec63d6c0b220a074
-      size: 247752684
+      md5: 7aa4aebc7593ff669334c75a9855c5b1
+      size: 261762773
   generate-dataset:
     cmd: python -m scripts.generate_dataset --strategy downsample --min-word-count
       2 --test-size 0.25 --compress --vocab-filename vocab.txt --markups-filename
       markups.jsonl.bz2 -i data/ruwiki-yo-segments.txt -O data
     deps:
+    - path: data/not-safe.txt
+      hash: md5
+      md5: ec5f0115a62d944f6cd2e1f8581823be
+      size: 242799
     - path: data/ruwiki-latest-pages-articles.xml.bz2
       hash: md5
       md5: 0a071a40df2edf25a0834db3e8b57da6
       size: 5282465397
     - path: data/ruwiki-yo-segments.txt
       hash: md5
-      md5: 2b3dbc412cb45986ec63d6c0b220a074
-      size: 247752684
+      md5: 7aa4aebc7593ff669334c75a9855c5b1
+      size: 261762773
+    - path: data/safe.txt
+      hash: md5
+      md5: 9ee382053bc78a616ce026d2aeda20a0
+      size: 864914
     outs:
     - path: data/test-markups.jsonl.bz2
       hash: md5
-      md5: 34bea84c2564f26b839c7bafd0bd3e1e
-      size: 3362929
+      md5: 7b384dadd7043dbfd219100d2c25a10f
+      size: 3573297
     - path: data/train-markups.jsonl.bz2
       hash: md5
-      md5: 225ee7f02b8eea367134e734a046f973
-      size: 10050965
+      md5: d301473b92577f24fa69e978d578863f
+      size: 10705634
     - path: data/vocab.txt
       hash: md5
-      md5: e9bbb7087381f384893ed8c014c689d0
-      size: 173105
+      md5: 0c1e7f20fa413428179f26b48dc80544
+      size: 176669
   evaluate-model:
     cmd: python -m scripts.evaluate_model --config-path params.yaml --markups-path
       data/test-markups.jsonl.bz2 --vocab-path data/vocab.txt --save-path reports/metrics.json
     deps:
     - path: data/test-markups.jsonl.bz2
       hash: md5
-      md5: 34bea84c2564f26b839c7bafd0bd3e1e
-      size: 3362929
+      md5: 7b384dadd7043dbfd219100d2c25a10f
+      size: 3573297
     - path: data/vocab.txt
       hash: md5
-      md5: e9bbb7087381f384893ed8c014c689d0
-      size: 173105
+      md5: 0c1e7f20fa413428179f26b48dc80544
+      size: 176669
     - path: params.yaml
       hash: md5
       md5: 775df219797640f43123c3cf2468c09c
@@ -87,17 +108,5 @@ stages:
     outs:
     - path: reports/metrics.json
       hash: md5
-      md5: 38dfea03ee409e4aad914cc29f50a47a
-      size: 415
-  download-pretrained-embeddings:
-    cmd: scripts/download_pretrained_embeddings.sh
-    deps:
-    - path: scripts/download_pretrained_embeddings.sh
-      hash: md5
-      md5: 789c3ef82b98ef354406bfed627a3f45
-      size: 178
-    outs:
-    - path: data/navec_hudlit_v1_12B_500K_300d_100q.tar
-      hash: md5
-      md5: 44313cfe6bb81ecdaef94d20f553a102
-      size: 53012480
+      md5: fe75cf7c135de7a8c89513f882152947
+      size: 425
