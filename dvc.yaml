@@ -18,6 +18,8 @@ stages:
       - ${WIKI_DATA_PATH}
   download-eyo-dicts:
     cmd: scripts/download_eyo_kernel_dicts.sh
+    deps:
+      - scripts/download_eyo_kernel_dicts.sh
     outs:
       - ${SAFE_DICT_PATH}
       - ${NOT_SAFE_DICT_PATH}
@@ -29,6 +31,8 @@ stages:
       -o ${SEGM_DATA_PATH}
     deps:
       - ${WIKI_DATA_PATH}
+      - ${SAFE_DICT_PATH}
+      - ${NOT_SAFE_DICT_PATH}
     outs:
       - ${SEGM_DATA_PATH}
   generate-dataset:
@@ -42,6 +46,8 @@ stages:
     deps:
       - ${WIKI_DATA_PATH}
       - ${SEGM_DATA_PATH}
+      - ${SAFE_DICT_PATH}
+      - ${NOT_SAFE_DICT_PATH}
     outs:
       - ${DATA_DIR}/train-${MARKUPS_FILENAME}
       - ${DATA_DIR}/test-${MARKUPS_FILENAME}
