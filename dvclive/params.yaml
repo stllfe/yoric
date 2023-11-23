@@ -1,0 +1,12 @@
+seed: 25512
+num_epochs: 50
+num_batches: 25
+num_eval_samples: 5000
+learning_rate: 0.01
+weight_decay: 1e-05
+schedule_patience: 3
+schedule_factor: 0.5
+num_words: 481601
+emb_dim: 300
+num_layers: 2
+dropout: 0.1

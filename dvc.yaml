@@ -38,9 +38,9 @@ stages:
       -i ${WIKI_DATA_PATH}
       -o ${SEGM_DATA_PATH}
     deps:
-      - ${WIKI_DATA_PATH}
-      - ${SAFE_DICT_PATH}
-      - ${NOT_SAFE_DICT_PATH}
+    - ${WIKI_DATA_PATH}
+    - ${SAFE_DICT_PATH}
+    - ${NOT_SAFE_DICT_PATH}
     outs:
     - ${SEGM_DATA_PATH}
   generate-dataset:

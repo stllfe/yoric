@@ -47,8 +47,8 @@ stages:
     outs:
     - path: data/ruwiki-yo-segments.txt
       hash: md5
-      md5: 7aa4aebc7593ff669334c75a9855c5b1
-      size: 261762773
+      md5: 8d7c0f8b38863a15ee82b98f12d7e7da
+      size: 261763066
   generate-dataset:
     cmd: python -m scripts.generate_dataset --strategy downsample --min-word-count
       2 --test-size 0.25 --compress --vocab-filename vocab.txt --markups-filename
@@ -64,8 +64,8 @@ stages:
       size: 5282465397
     - path: data/ruwiki-yo-segments.txt
       hash: md5
-      md5: 7aa4aebc7593ff669334c75a9855c5b1
-      size: 261762773
+      md5: 8d7c0f8b38863a15ee82b98f12d7e7da
+      size: 261763066
     - path: data/safe.txt
       hash: md5
       md5: 9ee382053bc78a616ce026d2aeda20a0
@@ -73,40 +73,90 @@ stages:
     outs:
     - path: data/test-markups.jsonl.bz2
       hash: md5
-      md5: 7b384dadd7043dbfd219100d2c25a10f
-      size: 3573297
+      md5: ba23a2bd4ac0025c88f5972f9ef746cb
+      size: 3553005
     - path: data/train-markups.jsonl.bz2
       hash: md5
-      md5: d301473b92577f24fa69e978d578863f
-      size: 10705634
+      md5: 6e3d9f5c52e9d5ea1e7913ef46ac7778
+      size: 10671052
     - path: data/vocab.txt
       hash: md5
-      md5: 0c1e7f20fa413428179f26b48dc80544
-      size: 176669
+      md5: 1b76415bd4b41170015fff567e024316
+      size: 176746
   evaluate-model:
     cmd: python -m scripts.evaluate_model --config-path params.yaml --markups-path
       data/test-markups.jsonl.bz2 --vocab-path data/vocab.txt --save-path reports/metrics.json
     deps:
     - path: data/test-markups.jsonl.bz2
       hash: md5
-      md5: 7b384dadd7043dbfd219100d2c25a10f
-      size: 3573297
+      md5: ba23a2bd4ac0025c88f5972f9ef746cb
+      size: 3553005
     - path: data/vocab.txt
       hash: md5
-      md5: 0c1e7f20fa413428179f26b48dc80544
-      size: 176669
+      md5: 1b76415bd4b41170015fff567e024316
+      size: 176746
+    - path: model
+      hash: md5
+      md5: b04b2ecfbf5a337e6c64320c6b670683.dir
+      size: 591233343
+      nfiles: 2
     - path: params.yaml
       hash: md5
-      md5: 775df219797640f43123c3cf2468c09c
-      size: 499
+      md5: 23b5e55347a4d1903b9fccda80570384
+      size: 880
     params:
       params.yaml:
-        model:
-          name: DictModel
-          params:
-            safe: false
+        model.name: WordRNNModel
+        model.params:
+          threshold: 0.5
     outs:
     - path: reports/metrics.json
       hash: md5
-      md5: fe75cf7c135de7a8c89513f882152947
-      size: 425
+      md5: e23ffeec4f5e9f1f1d9d188c15bda9e1
+      size: 452
+  download-pretrained-embeddings:
+    cmd: scripts/download_pretrained_embeddings.sh
+    deps:
+    - path: scripts/download_pretrained_embeddings.sh
+      hash: md5
+      md5: 789c3ef82b98ef354406bfed627a3f45
+      size: 178
+    outs:
+    - path: data/navec_hudlit_v1_12B_500K_300d_100q.tar
+      hash: md5
+      md5: 44313cfe6bb81ecdaef94d20f553a102
+      size: 53012480
+  train-model:
+    cmd: python -m scripts.train_model --seed 25512 --device cuda --num-layers 2 --dropout
+      0.1 --batch-size 128 --num-epochs 50 --num-batches 25 --num-eval-samples 5000
+      --learning-rate 0.01 --weight-decay 1e-05 --schedule-patience 3 --schedule-factor
+      0.5 --stopping-patience 9 --navec-path data/navec_hudlit_v1_12B_500K_300d_100q.tar
+      --vocab-path data/vocab.txt --train-markups-path data/train-markups.jsonl.bz2
+      --test-markups-path data/test-markups.jsonl.bz2
+    deps:
+    - path: data/navec_hudlit_v1_12B_500K_300d_100q.tar
+      hash: md5
+      md5: 44313cfe6bb81ecdaef94d20f553a102
+      size: 53012480
+    - path: data/test-markups.jsonl.bz2
+      hash: md5
+      md5: ba23a2bd4ac0025c88f5972f9ef746cb
+      size: 3553005
+    - path: data/train-markups.jsonl.bz2
+      hash: md5
+      md5: 6e3d9f5c52e9d5ea1e7913ef46ac7778
+      size: 10671052
+    - path: data/vocab.txt
+      hash: md5
+      md5: 1b76415bd4b41170015fff567e024316
+      size: 176746
+    - path: scripts/train_model.py
+      hash: md5
+      md5: c3777a62b3306077219de561c1f365db
+      size: 11005
+    outs:
+    - path: model
+      hash: md5
+      md5: b04b2ecfbf5a337e6c64320c6b670683.dir
+      size: 591233343
+      nfiles: 2
