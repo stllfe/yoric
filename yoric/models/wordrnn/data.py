@@ -3,13 +3,15 @@
 import random
 
 from collections.abc import Iterator
-from typing import Callable, NamedTuple
+from dataclasses import dataclass
+from typing import Callable
 
 from yoric.data import YeYoDataset
 from yoric.utils import yeficate
 
 
-class Sample(NamedTuple):
+@dataclass
+class Sample:
     words: list[str]
     index: int
     target: int
@@ -31,10 +33,10 @@ def batchify(
         random.shuffle(markups)
 
     items: list[Sample] = []
-    for markup in dataset:
+    for markup in markups:
         words = tokenizer(yeficate(markup.text))
         for label, target in zip(markup.labels, markup.targets):
-            word: str = vocab[label]
+            word = vocab.get_word(label)
             word = word.lower()
             try:
                 index = words.index(yeficate(word))

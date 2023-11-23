@@ -5,11 +5,10 @@ from __future__ import annotations
 import time
 
 from collections.abc import ItemsView
-from collections.abc import Mapping
 from collections.abc import Sequence
 from dataclasses import asdict
 from dataclasses import dataclass
-from typing import Final, Literal, Union
+from typing import Final, Literal, Protocol, Union
 
 from sklearn import metrics as M
 from tabulate import tabulate
@@ -30,7 +29,7 @@ TABLE_DEFAULT_STYLE: Final = 'rounded_outline'
 TABLE_NUMBER_FORMAT = '.9g'
 
 
-class ItemsMixin:
+class ItemsMixin(Protocol):
     def items(self) -> ItemsView[str, float]:
         return asdict(self).items()  # type: ignore
 
@@ -146,7 +145,7 @@ def unroll_predictions(
 
 
 def make_table(
-    mapping: Mapping[str, float],
+    mapping: ItemsMixin,
     precision: int = 3,
     headers: Sequence[str] = (),
     style: TableStyle = TABLE_DEFAULT_STYLE,

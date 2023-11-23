@@ -82,16 +82,21 @@ class WordBiLSTM(nn.Module):
         return StateDict(hparams=self.hparams, weights=self.state_dict())
 
     def forward(
-        self, context: torch.LongTensor, lengths: torch.LongTensor, indices: torch.LongTensor
-    ) -> torch.FloatTensor:
+        self, context: torch.Tensor, lengths: torch.Tensor, indices: torch.Tensor
+    ) -> torch.Tensor:
         embeddings = self.emb(context)
         targets = embeddings[torch.arange(embeddings.size(0)), indices]
 
-        packed = pack_padded_sequence(embeddings, lengths, batch_first=True, enforce_sorted=False)
+        # why lengths.cpu():
+        # https://github.com/pytorch/pytorch/issues/43227
+        packed = pack_padded_sequence(
+            embeddings, lengths.cpu(), batch_first=True, enforce_sorted=False
+        )
+
         output, *_ = self.lstm(packed)
         output, *_ = pad_packed_sequence(output, batch_first=True)
 
-        context = output.sum(1)  #  / lengths.view(-1, 1)
+        context = output.sum(1)  # / lengths.view(-1, 1)
 
         # print(targets.shape)
         # print(context.shape)

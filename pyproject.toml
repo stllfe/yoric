@@ -55,6 +55,7 @@ warn_redundant_casts = true
 check_untyped_defs = true
 disallow_untyped_defs = true
 disallow_any_unimported = true
+no_namespace_packages = true
 
 exclude = []
 
@@ -64,5 +65,7 @@ module = [
     'sklearn',
     'iterstrat.*',
     'corus.*',
+    'navec',
+    'dvclive',
 ]
 ignore_missing_imports = true

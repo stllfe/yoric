@@ -38,7 +38,7 @@ class WordRNNModel(YoModel):
         self.device = device
 
         self.model = model or WordBiLSTM.from_state(
-            StateDict(torch.load(config.MODEL_PATH, map_location=device))
+            StateDict(torch.load(config.MODEL_PATH, map_location=device))  # type: ignore
         )
         self.model.eval()
         self.model.to(device)
@@ -80,13 +80,13 @@ class WordRNNModel(YoModel):
                 lengths.append(len(codes))
         if not indices:
             return output
-        with torch.device(self.device):
-            outs = self.model.forward(
-                context=torch.tensor(context).view(len(indices), -1),
-                lengths=torch.tensor(lengths),
-                indices=torch.tensor(indices),
+        outs: torch.Tensor = torch.atleast_1d(
+            self.model.forward(
+                context=torch.tensor(context, device=self.device).view(len(indices), -1),
+                lengths=torch.tensor(lengths, device=self.device),
+                indices=torch.tensor(indices, device=self.device),
             )
-        outs: torch.Tensor = torch.atleast_1d(outs)  # .sigmoid_())
+        )
 
         for index, score, check in zip(indices, outs, outs > self.threshold):
             word = words[index]

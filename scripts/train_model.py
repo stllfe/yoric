@@ -14,14 +14,13 @@ import numpy.typing as npt
 import torch
 import tyro
 
+from dvclive import Live
 from navec import Navec
 from torch import nn
 from torch import optim
 from torch.nn.utils.rnn import pad_sequence
 from torchinfo import summary
 from tqdm import tqdm
-
-import dvclive
 
 from yoric import consts
 from yoric import data
@@ -39,23 +38,24 @@ from yoric.models.wordrnn.tokenizer import Tokenizer
 
 
 class Batch(NamedTuple):
-    context: torch.LongTensor
-    lengths: torch.LongTensor
-    indices: torch.LongTensor
-    targets: torch.LongTensor
+    context: torch.Tensor
+    lengths: torch.Tensor
+    indices: torch.Tensor
+    targets: torch.Tensor
 
 
 def encode_batch_padded(
     samples: Samples,
     vocab: data.Vocab,
     padding_value: int = 0,
+    device: Union[torch.device, str] = consts.CPU,
 ) -> Batch:
     """Converts raw markup samples to tensors of equal lengths."""
 
-    context: list[torch.LongTensor] = []
-    lengths: list[torch.LongTensor] = []
-    indices: list[torch.LongTensor] = []
-    targets: list[torch.LongTensor] = []
+    context: list[torch.Tensor] = []
+    lengths: list[int] = []
+    indices: list[int] = []
+    targets: list[int] = []
 
     for sample in samples:
         codes = torch.tensor([encode_word(word, vocab) for word in sample.words])
@@ -65,14 +65,14 @@ def encode_batch_padded(
         targets.append(sample.target)
 
     return Batch(
-        context=pad_sequence(context, batch_first=True, padding_value=padding_value),
-        lengths=torch.tensor(lengths),
-        indices=torch.tensor(indices),
-        targets=torch.tensor(targets),
+        context=pad_sequence(context, batch_first=True, padding_value=padding_value).to(device),
+        lengths=torch.tensor(lengths, device=device),
+        indices=torch.tensor(indices, device=device),
+        targets=torch.tensor(targets, device=device),
     )
 
 
-def extract_pretrained_embeddings(navec: Navec) -> tuple[data.Vocab, npt.NDArray]:
+def extract_pretrained_embeddings(navec: Navec) -> tuple[data.Vocab, npt.NDArray]:  # type: ignore
     """Extracts Navec vocab and embeddings to our classes."""
 
     # exclude <pad>, <unk> and english words
@@ -103,9 +103,9 @@ def extract_pretrained_embeddings(navec: Navec) -> tuple[data.Vocab, npt.NDArray
     # todo: move to tests
     assert 'zzz' not in vocab
     assert 'всё' not in vocab
-    assert np.array_equal(embs[vocab['все']], (navec.get('все') + navec.get('всё')) / 2)
-    assert np.array_equal(embs[vocab[config.PAD]], navec.get(config.PAD))
-    assert np.array_equal(embs[vocab[config.UNK]], navec.get(config.UNK))
+    assert np.array_equal(embs[vocab.get_label('все')], (navec.get('все') + navec.get('всё')) / 2)
+    assert np.array_equal(embs[vocab.get_label(config.PAD)], navec.get(config.PAD))
+    assert np.array_equal(embs[vocab.get_label(config.UNK)], navec.get(config.UNK))
 
     return vocab, embs
 
@@ -164,7 +164,7 @@ def step(model: nn.Module, criterion: nn.Module, optimizer: optim.Optimizer, bat
     loss.backward()
 
     optimizer.step()
-    return loss.detach().cpu().numpy().item()
+    return cast(float, loss.detach().cpu().numpy().item())
 
 
 def test(
@@ -176,13 +176,16 @@ def test(
         A tuple of true, pred, score lists.
     """
 
-    wordrnn.model.eval()
+    model = wordrnn.model
+    training = model.training
+    model.eval()
 
     X = [utils.yeficate(m.text) for m in markups]
-    outs = wordrnn.predict(X, verbose=True)
+    with torch.no_grad():
+        outs = wordrnn.predict(X, verbose=True)
     t, p, s = evaluate.unroll_predictions(list(markups), outs)
 
-    wordrnn.model.train()
+    model.train(training)
     return t, p, s
 
 
@@ -199,7 +202,7 @@ def train(
     test_markups_path: Union[Path, str],
     vocab_path: Union[Path, str],
     num_eval_samples: int = -1,
-    schedule_patience: Optional[int] = None,
+    schedule_patience: int = 10,
     schedule_factor: float = 0.1,
     stopping_patience: Optional[int] = None,
     device: Union[torch.device, str] = consts.CPU,
@@ -213,7 +216,6 @@ def train(
     exp_dir.mkdir(exist_ok=True, parents=True)
 
     fix_random_seed(seed)
-    torch.set_default_device(device)
 
     model_state_path = exp_dir / config.MODEL_FILE
     model_vocab_path = exp_dir / config.VOCAB_FILE
@@ -232,14 +234,15 @@ def train(
         dropout=dropout,
     )
     model.load_embeddings(torch.from_numpy(embeddings))
+    model.to(device)
 
     print('Model initialized:')
     example = (
         torch.randint(low=0, high=num_words, size=(1, 50), dtype=torch.long),
-        torch.LongTensor([50]),
-        torch.LongTensor([1]),
+        torch.tensor([50]),
+        torch.tensor([1]),
     )
-    summary(model, input_data=example, depth=1, verbose=1)
+    summary(model, input_data=example, depth=1, device=device, verbose=1)
 
     # cleanup
     del embeddings
@@ -261,12 +264,12 @@ def train(
     test_data = data.load_dataset(test_markups_path, vocab_path)
     num_batches = num_batches or count_batches(train_data, batch_size=batch_size, drop_last=True)
 
-    best_score = 0
+    best_score = 0.0
     best_loss = np.inf
     plato_epochs = 0
 
     # run the train loop
-    with dvclive.Live(save_dvc_exp=True) as live:
+    with Live(save_dvc_exp=True) as live:
         # run params
         live.log_param('seed', seed)
         live.log_param('num_epochs', num_epochs)
@@ -297,18 +300,19 @@ def train(
 
             losses: list[float] = []
             for samples in make_progressbar(sampler, num_batches):
-                batch = encode_batch_padded(samples, vocab, padding_value=vocab[config.PAD])
+                batch = encode_batch_padded(
+                    samples, vocab, padding_value=vocab.get_label(config.PAD), device=device
+                )
                 loss = step(model, criterion, optimizer, batch)
                 losses.append(loss)
 
-            epoch_loss = np.mean(losses)
+            epoch_loss = np.mean(losses).item()
             if epoch_loss <= best_loss:
                 best_loss = epoch_loss
 
-            with torch.no_grad():
-                t, p, s = test(wordrnn, test_data[:num_eval_samples])
-                metrics = evaluate.Metrics.from_predictions(t, p, s)
-                print(evaluate.make_table(metrics))
+            t, p, s = test(wordrnn, test_data[:num_eval_samples])
+            metrics = evaluate.Metrics.from_predictions(t, p, s)
+            print(evaluate.make_table(metrics))
 
             for metric, value in metrics.items():
                 live.log_metric(f'test/{metric}', value)
@@ -336,7 +340,6 @@ def train(
 
             scheduler.step(metrics.f1_score)
             live.next_step()
-
             print(f'Loss: {epoch_loss:.4f} | F1: {metrics.f1_score:.4f} (best: {best_score:.4f})\n')
 
 

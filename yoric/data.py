@@ -7,7 +7,7 @@ from collections.abc import Iterator
 from dataclasses import asdict
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Union
+from typing import Any, overload, Union
 
 from yoric import utils
 
@@ -89,8 +89,20 @@ class YeYoDataset:
         self._markups = list(markups)
         self._vocab = vocab
 
+    @overload
     def __getitem__(self, index: int) -> YeYoMarkup:
-        return self._markups[index]
+        ...
+
+    @overload
+    def __getitem__(self, index: slice) -> YeYoDataset:
+        ...
+
+    def __getitem__(self, index: Union[int, slice]) -> Union[YeYoMarkup, YeYoDataset]:
+        if isinstance(index, int):
+            return self.markups[index]
+        if isinstance(index, slice):
+            return YeYoDataset(self.markups[index], self.vocab)
+        raise TypeError(f"Unsupported index type '{type(index)}'")
 
     def __len__(self) -> int:
         return len(self._markups)

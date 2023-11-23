@@ -18,6 +18,7 @@ model:
     threshold: 0.5
   train:
     seed: 25512
+    device: cuda
     # network arch
     num-layers: 2
     dropout: 0.1
