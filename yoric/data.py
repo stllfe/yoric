@@ -35,12 +35,20 @@ class Vocab:
             return False
         return True
 
-    def __getitem__(self, key: Any) -> Union[str, int]:
+    @overload
+    def __getitem__(self, key: str) -> int:
+        ...
+
+    @overload
+    def __getitem__(self, key: int) -> str:
+        ...
+
+    def __getitem__(self, key: Union[int, str]) -> Union[str, int]:
         if isinstance(key, int):
             return self.get_word(key)
         if isinstance(key, str):
             return self.get_label(key)
-        raise TypeError(f"Can't lookup keys of type {type(key)} in Vocab!")
+        raise TypeError(f"Can't lookup keys of type '{type(key)}'!")
 
     def get_label(self, word: str) -> int:
         """Returns a label by the given word."""
